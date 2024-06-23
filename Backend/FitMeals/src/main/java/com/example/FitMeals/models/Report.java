@@ -22,7 +22,7 @@ public class Report {
 
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
-    private User user;
+    private AppUser user;
 
     private ReportType reportType;
     private LocalDateTime startDate;
@@ -33,7 +33,7 @@ public class Report {
     private double totalCarbs;
     private LocalDateTime createdAt;
 
-    public Report(User user, ReportType reportType, LocalDateTime startDate, LocalDateTime endDate, double totalCalories, double totalProtein, double totalFat, double totalCarbs, LocalDateTime createdAt) {
+    public Report(AppUser user, ReportType reportType, LocalDateTime startDate, LocalDateTime endDate, double totalCalories, double totalProtein, double totalFat, double totalCarbs, LocalDateTime createdAt) {
         this.user = user;
         this.reportType = reportType;
         this.startDate = startDate;

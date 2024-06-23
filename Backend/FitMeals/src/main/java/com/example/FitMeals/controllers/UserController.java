@@ -1,7 +1,7 @@
 package com.example.FitMeals.controllers;
 
 
-import com.example.FitMeals.models.User;
+import com.example.FitMeals.models.AppUser;
 import com.example.FitMeals.services.UserService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -20,22 +20,22 @@ public class UserController {
     }
 
     @GetMapping
-    public List<User> getAllUsers() {
+    public List<AppUser> getAllUsers() {
         return userService.getAllUsers();
     }
 
     @GetMapping("/{id}")
-    public User getUserById(@PathVariable Long id) {
+    public AppUser getUserById(@PathVariable Long id) {
         return userService.getUserById(id).orElse(null);
     }
 
     @PostMapping
-    public User createUser(@RequestBody User user) {
+    public AppUser createUser(@RequestBody AppUser user) {
         return userService.saveUser(user);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<User> updateUser(@PathVariable Long id, @RequestBody User user) {
+    public ResponseEntity<AppUser> updateUser(@PathVariable Long id, @RequestBody AppUser user) {
         if(userService.getUserById(id).isEmpty()){
             return ResponseEntity.notFound().build();
         }

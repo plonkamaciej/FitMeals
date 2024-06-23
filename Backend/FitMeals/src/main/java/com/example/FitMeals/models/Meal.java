@@ -23,7 +23,7 @@ public class Meal {
 
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
-    private User user;
+    private AppUser user;
 
     private LocalDateTime date;
     private MealType mealType;
@@ -33,7 +33,7 @@ public class Meal {
     private double totalCarbs;
 
 
-    public Meal(User user, LocalDateTime date, MealType mealType, double totalCalories, double totalProtein, double totalFat, double totalCarbs) {
+    public Meal(AppUser user, LocalDateTime date, MealType mealType, double totalCalories, double totalProtein, double totalFat, double totalCarbs) {
         this.user = user;
         this.date = date;
         this.mealType = mealType;

@@ -1,6 +1,6 @@
 package com.example.FitMeals.services;
 
-import com.example.FitMeals.models.User;
+import com.example.FitMeals.models.AppUser;
 import com.example.FitMeals.repositories.UserRepository;
 import org.springframework.stereotype.Service;
 import java.util.List;
@@ -15,16 +15,16 @@ public class UserService {
         this.userRepository = userRepository;
     }
 
-    public List<User> getAllUsers() {
+    public List<AppUser> getAllUsers() {
         return userRepository.findAll();
     }
 
 
-    public Optional<User> getUserById(Long id){
+    public Optional<AppUser> getUserById(Long id){
         return userRepository.findById(id);
     }
 
-    public User saveUser(User user) {
+    public AppUser saveUser(AppUser user) {
         return userRepository.save(user);
     }
 
@@ -32,8 +32,8 @@ public class UserService {
         userRepository.deleteById(id);
     }
 
-    public Optional<User> updateUser(User user) {
-        Optional<User> userOptional = userRepository.findById(user.getId());
+    public Optional<AppUser> updateUser(AppUser user) {
+        Optional<AppUser> userOptional = userRepository.findById(user.getId());
         if (userOptional.isPresent()) {
             userRepository.save(user);
         }
