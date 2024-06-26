@@ -1,6 +1,8 @@
 package com.example.FitMeals.controllers;
 
+import com.example.FitMeals.dto.FoodApiResponse;
 import com.example.FitMeals.models.Food;
+import com.example.FitMeals.services.FoodApiService;
 import com.example.FitMeals.services.FoodService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -13,9 +15,11 @@ import java.util.List;
 public class FoodController {
 
     private final FoodService foodService;
+    private final FoodApiService foodApiService;
 
-    public FoodController(FoodService foodService) {
+    public FoodController(FoodService foodService, FoodApiService foodApiService) {
         this.foodService = foodService;
+        this.foodApiService = foodApiService;
     }
 
     @GetMapping
@@ -27,6 +31,13 @@ public class FoodController {
     public Food getFoodById(@PathVariable Long id) {
         return foodService.getFoodById(id).orElse(null);
     }
+
+
+    @GetMapping("/search/{ingredient}")
+    public Food searchFoodByIngredient(@PathVariable String ingredient) {
+        return foodApiService.getFoodData(ingredient);
+    }
+
 
     @PostMapping
     public Food createFood(@RequestBody Food food) {
