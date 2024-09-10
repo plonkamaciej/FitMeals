@@ -19,16 +19,16 @@ public class Food {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private String name;
-    private int calories;
-    private int protein;
-    private int fat;
-    private int carbs;
+    private double calories;
+    private double protein;
+    private double fat;
+    private double carbs;
 
     @OneToMany(mappedBy = "food")
     private Set<MealItem> mealItems;
 
 
-    public Food(String name, int calories, int protein, int fat, int carbs, Set<MealItem> mealItems) {
+    public Food(String name, double calories, double protein, double fat, double carbs, Set<MealItem> mealItems) {
         this.name = name;
         this.calories = calories;
         this.protein = protein;
