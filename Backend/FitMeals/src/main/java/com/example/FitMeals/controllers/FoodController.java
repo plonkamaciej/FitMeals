@@ -1,6 +1,5 @@
 package com.example.FitMeals.controllers;
 
-import com.example.FitMeals.dto.FoodApiResponse;
 import com.example.FitMeals.models.Food;
 import com.example.FitMeals.services.FoodApiService;
 import com.example.FitMeals.services.FoodService;
@@ -34,7 +33,7 @@ public class FoodController {
 
 
     @GetMapping("/search/{ingredient}")
-    public Food searchFoodByIngredient(@PathVariable String ingredient) {
+    public Food searchFoodByName(@PathVariable String ingredient) {
         return foodApiService.getFoodData(ingredient);
     }
 

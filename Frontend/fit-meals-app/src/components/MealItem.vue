@@ -30,10 +30,10 @@ export default {
     totalMacros() {
       return this.meal.products.reduce(
         (totals, product) => {
-          totals.fat += product.macros.fat * (product.grams / 100);
-          totals.protein += product.macros.protein * (product.grams / 100);
-          totals.carbs += product.macros.carbs * (product.grams / 100);
-          totals.calories += product.macros.calories * (product.grams / 100);
+          totals.fat += product.fat * (product.grams / 100);
+          totals.protein += product.protein * (product.grams / 100);
+          totals.carbs += product.carbs * (product.grams / 100);
+          totals.calories += product.calories * (product.grams / 100);
           return totals;
         },
         { fat: 0, protein: 0, carbs: 0, calories: 0 }
