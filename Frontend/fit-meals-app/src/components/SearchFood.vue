@@ -12,7 +12,11 @@
       <ul>
         <li v-for="product in filteredProducts" :key="product.id">
           <label>
-            <input type="checkbox" v-model="selectedProducts" :value="product" />
+            <input 
+              type="checkbox" 
+              :checked="isSelected(product)" 
+              @change="toggleProductSelection(product)"
+            />
             {{ product.name }}
           </label>
           <button @click="toggleProductDetails(product.id)">
@@ -43,56 +47,105 @@ export default {
   data() {
     return {
       searchQuery: '',
-      products: [],
-      filteredProducts: [],
-      selectedProducts: []
+      products: [], // Bieżąco wyszukane produkty
+      filteredProducts: [], // Wyszukane produkty połączone z zaznaczonymi
+      selectedProducts: [] // Lista zaznaczonych produktów
     };
   },
   methods: {
     async searchProducts(query) {
-      try {
-        const response = await fetch(`http://localhost:8080/api/foods/search/${query}`);
-        const data = await response.json();
-        if (data) {
-          // Dodaj oryginalne makroskładniki do referencji
-          data.showDetails = false;
-          data.grams = 100; // Domyślna ilość
-          data.originalMacros = { ...data.macros }; // Kopia oryginalnych makroskładników
+  try {
+    const response = await fetch(`http://localhost:8080/api/foods/search/${query}`);
+    const data = await response.json();
+    
+    if (data) {
+      console.log("Fetched data:", data); // Loguj dane, aby sprawdzić ich strukturę
 
-          this.products = [data];
-          this.filteredProducts = this.products;
-        } else {
-          this.products = [];
-          this.filteredProducts = [];
-        }
-      } catch (error) {
-        console.error('Error fetching products:', error);
-      }
-    },
+      // Dodaj oryginalne makroskładniki do referencji
+      data.showDetails = false;
+      data.grams = 100; // Domyślna ilość
+      data.originalMacros = {
+        fat: parseFloat(data.fat) || 0,
+        protein: parseFloat(data.protein) || 0,
+        carbs: parseFloat(data.carbs) || 0,
+        calories: parseFloat(data.calories) || 0
+      };
+
+      this.products = [data];
+      this.filteredProducts = this.products;
+    } else {
+      this.products = [];
+      this.filteredProducts = [];
+    }
+  } catch (error) {
+    console.error('Error fetching products:', error);
+  }
+},
     debouncedSearch: debounce(function () {
       if (this.searchQuery) {
         this.searchProducts(this.searchQuery);
       } else {
         this.products = [];
-        this.filteredProducts = [];
+        this.filteredProducts = [...this.selectedProducts]; // Jeśli brak wyszukiwania, pokaż wybrane produkty
       }
     }, 300),
     updateMacros(product) {
-      const grams = product.grams || 100; // Domyślna wartość to 100 gramów
-      const ratio = grams / 100;
+     
+      const grams = product.grams || 100; // Używamy domyślnej wartości 100 gramów, jeśli brak wartości
+      
+     if (!product.originalMacros) {
+        product.originalMacros = {
+          fat: parseFloat(product.fat) || 0, // Używamy parseFloat, by upewnić się, że mamy liczbę
+          protein: parseFloat(product.protein) || 0,
+          carbs: parseFloat(product.carbs) || 0,
+          calories: parseFloat(product.calories) || 0
+          };
+       }
 
-      product = {
-        fat: (product.originalMacros.fat * ratio).toFixed(2),
-        protein: (product.originalMacros.protein * ratio).toFixed(2),
-        carbs: (product.originalMacros.carbs * ratio).toFixed(2),
-        calories: (product.originalMacros.calories * ratio).toFixed(2)
-      };
-    },
+       if (grams === 0) {
+        product.fat = "0.00";
+        product.protein = "0.00";
+        product.carbs = "0.00";
+        product.calories = "0.00";
+      } else {
+        const ratio = grams / 100;
+
+        product.fat = (product.originalMacros.fat * ratio).toFixed(2);
+        product.protein = (product.originalMacros.protein * ratio).toFixed(2);
+        product.carbs = (product.originalMacros.carbs * ratio).toFixed(2);
+        product.calories = (product.originalMacros.calories * ratio).toFixed(2);
+     }
+
+    
+    }
+
+
+,
     toggleProductDetails(productId) {
       const product = this.filteredProducts.find(p => p.id === productId);
       if (product) {
         product.showDetails = !product.showDetails;
       }
+    },
+    isSelected(product) {
+      return this.selectedProducts.some(p => p.id === product.id); // Sprawdzamy, czy produkt jest już zaznaczony
+    },
+    toggleProductSelection(product) {
+      if (this.isSelected(product)) {
+        // Usuń produkt, jeśli został już zaznaczony
+        this.selectedProducts = this.selectedProducts.filter(p => p.id !== product.id);
+      } else {
+        // Dodaj produkt do listy zaznaczonych
+        this.selectedProducts.push({ ...product });
+      }
+      this.mergeSelectedWithSearched();
+    },
+    mergeSelectedWithSearched() {
+      // Połącz zaznaczone produkty z wyszukanymi, aby zachować zaznaczenia
+      this.filteredProducts = [
+        ...this.selectedProducts, // Zaznaczone produkty
+        ...this.products.filter(p => !this.isSelected(p)) // Wyszukane produkty, które nie są jeszcze zaznaczone
+      ];
     },
     save() {
       const addedProducts = this.selectedProducts.map(product => ({
@@ -113,7 +166,7 @@ export default {
     }
   },
   mounted() {
-    this.filteredProducts = this.products;
+    this.filteredProducts = [...this.selectedProducts]; // Na początku wyświetlamy tylko zaznaczone produkty
   }
 };
 </script>
