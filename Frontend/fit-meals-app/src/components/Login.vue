@@ -1,37 +1,48 @@
 <template>
-    <div class="login-page">
-      <h2>Zaloguj się</h2>
-      <form @submit.prevent="login">
-        <div>
-          <label for="username">Nazwa użytkownika:</label>
-          <input type="text" v-model="username" required />
-        </div>
-        <div>
-          <label for="password">Hasło:</label>
-          <input type="password" v-model="password" required />
-        </div>
-        <button type="submit">Zaloguj</button>
-      </form>
-      <p>Nie masz konta? <router-link to="/register">Zarejestruj się</router-link></p>
-    </div>
-  </template>
-  
-  <script>
-  export default {
-    data() {
-      return {
-        username: '',
-        password: '',
-      };
+  <div class="login-container">
+    <h2>Login</h2>
+    <form @submit.prevent="login">
+      <div>
+        <label for="username">Username:</label>
+        <input type="text" v-model="username" id="username" required />
+      </div>
+      <div>
+        <label for="password">Password:</label>
+        <input type="password" v-model="password" id="password" required />
+      </div>
+      <button type="submit">Login</button>
+    </form>
+    <p>Don't have an account? <router-link to="/register">Register here</router-link></p>
+    <p v-if="errorMessage">{{ errorMessage }}</p>
+  </div>
+</template>
+
+<script>
+import axios from 'axios';
+
+export default {
+  data() {
+    return {
+      username: '',
+      password: '',
+      errorMessage: '',
+    };
+  },
+  methods: {
+    async login() {
+      try {
+        const response = await axios.post('http://localhost:8080/api/users/login', {
+          username: this.username,
+          password: this.password,
+        });
+        alert(response.data); // Możesz tu dodać przekierowanie po zalogowaniu
+      } catch (error) {
+        this.errorMessage = error.response.data;
+      }
     },
-    methods: {
-      login() {
-        // Wyślij żądanie logowania na backend
-        console.log('Logowanie...', this.username, this.password);
-      },
-    },
-  };
-  </script>
+  },
+};
+</script>
   
   <style scoped>
   .login-page {
