@@ -1,82 +1,47 @@
-<!-- src/components/Diary.vue -->
 <template>
-    <div class="diary">
-      <div class="macros">
-        <h2>Aktualne makroelementy</h2>
-        <p>Tłuszcz: {{ totalMacros.fat }} g</p>
-        <p>Białko: {{ totalMacros.protein }} g</p>
-        <p>Węglowodany: {{ totalMacros.carbs }} g</p>
-        <p>Kalorie: {{ totalMacros.calories }} kcal</p>
-      </div>
-      
-      <div class="meals">
-        <Meal
-          v-for="meal in mealList"
-          :key="meal.name"
-          :mealName="meal.name"
-          :macros="meal.macros"
-          @add-product="openSearchFood"
-        />
-      </div>
-  
-      <!-- Modal wyszukiwania produktów -->
-      <SearchFood v-if="showSearchFood" @product-selected="handleProductSelected" @cancel="closeSearchFood" />
+  <div>
+    <h2>My Diary</h2>
+    <div class="meal-section" v-for="mealType in mealTypes" :key="mealType">
+      <h3>{{ mealType }}</h3>
+      <ul>
+        <li v-for="mealItem in getMealItems(mealType)" :key="mealItem.id">
+          {{ mealItem.food.name }} - {{ mealItem.quantity }}g
+        </li>
+      </ul>
+      <button @click="openSearch(mealType)">Add product</button>
     </div>
-  </template>
-  
-  <script>
-  import Meal from './MealItem.vue';
-  import SearchFood from './SearchFood.vue';
-  
-  export default {
-    components: {
-      Meal,
-      SearchFood
-    },
-    data() {
-      return {
-        totalMacros: {
-          fat: 0,
-          protein: 0,
-          carbs: 0,
-          calories: 0
-        },
-        mealList: [
-          { name: 'Śniadanie', macros: { fat: 0, protein: 0, carbs: 0, calories: 0 } },
-          { name: 'Lunch', macros: { fat: 0, protein: 0, carbs: 0, calories: 0 } },
-          { name: 'Obiad', macros: { fat: 0, protein: 0, carbs: 0, calories: 0 } },
-          { name: 'Przekąski', macros: { fat: 0, protein: 0, carbs: 0, calories: 0 } }
-        ],
-        showSearchFood: false,
-        currentMealName: null
-      };
-    },
-    methods: {
-      openSearchFood(mealName) {
-        console.log('Otwieranie wyszukiwarki dla posiłku:', mealName);
-        this.currentMealName = mealName;
-        this.showSearchFood = true;
-      },
-      handleProductsSelected(products) {
-      products.forEach(product => {
-        const meal = this.mealList.find(m => m.name === this.currentMealName);
-        if (meal) {
-          meal.macros.fat += product.macros.fat;
-          meal.macros.protein += product.macros.protein;
-          meal.macros.carbs += product.macros.carbs;
-          meal.macros.calories += product.macros.calories;
+  </div>
+</template>
 
-          this.totalMacros.fat += product.macros.fat;
-          this.totalMacros.protein += product.macros.protein;
-          this.totalMacros.carbs += product.macros.carbs;
-          this.totalMacros.calories += product.macros.calories;
-        }
-      });
-      this.closeSearchFood();
+<script>
+import SearchFood from '@/components/SearchFood.vue'; // Assuming the search component already exists
+
+export default {
+  name: 'Diary',
+  data() {
+    return {
+      mealTypes: ['BREAKFAST', 'LUNCH', 'DINNER', 'SNACK'],
+      meals: {
+        BREAKFAST: [],
+        LUNCH: [],
+        DINNER: [],
+        SNACK: []
+      }
+    };
+  },
+  methods: {
+    getMealItems(mealType) {
+      // Zwraca produkty dodane do danego posiłku
+      return this.meals[mealType];
+    },
+    openSearch(mealType) {
+      // Implementacja otwierania wyszukiwarki
+      this.$router.push({ path: '/search-food', query: { mealType } });
     }
-}
-  };
-  </script>
+  }
+};
+</script>
+
   
   <style scoped>
   .diary {

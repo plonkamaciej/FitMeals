@@ -1,20 +1,26 @@
 <template>
   <div id="app">
-    <!-- Router navigation example (optional) -->
+    <h1>Welcome to Fit Meals</h1>
     <nav>
-      <router-link to="/">Home</router-link>
-      <router-link to="/login">Login</router-link>
-      <router-link to="/register">Register</router-link>
+      <router-link v-if="isLoggedIn" to="/diary">My Diary</router-link>
+      <router-link v-if="!isLoggedIn" to="/login">Login</router-link>
+      <router-link v-if="!isLoggedIn" to="/register">Register</router-link>
     </nav>
-
-    <!-- This is where the routed component will be displayed -->
-    <router-view />
+    <router-view/>
   </div>
 </template>
 
 <script>
 export default {
-  name: 'App',
+  data() {
+    return {
+      isLoggedIn: false, // Zmienna przechowująca stan logowania
+    };
+  },
+  created() {
+    // Sprawdzamy czy użytkownik jest zalogowany (np. przez obecność tokena w localStorage)
+    this.isLoggedIn = !!localStorage.getItem("authToken");
+  },
 };
 </script>
 

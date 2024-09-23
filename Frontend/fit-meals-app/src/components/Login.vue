@@ -36,6 +36,7 @@ export default {
           password: this.password,
         });
         alert(response.data); // Możesz tu dodać przekierowanie po zalogowaniu
+        this.$router.push('/diary');
       } catch (error) {
         this.errorMessage = error.response.data;
       }

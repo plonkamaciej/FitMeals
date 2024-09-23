@@ -8,6 +8,8 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @NoArgsConstructor
@@ -21,21 +23,23 @@ public class Meal {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne
-    @JoinColumn(name = "user_id", nullable = false)
-    private AppUser user;
 
-    private LocalDateTime date;
     private MealType mealType;
     private double totalCalories;
     private double totalProtein;
     private double totalFat;
     private double totalCarbs;
 
+    @OneToMany(mappedBy = "meal", cascade = CascadeType.ALL)
+    private List<MealItem> mealItems;
 
-    public Meal(AppUser user, LocalDateTime date, MealType mealType, double totalCalories, double totalProtein, double totalFat, double totalCarbs) {
-        this.user = user;
-        this.date = date;
+    public Meal(MealType mealType) {
+        this.mealType = mealType;
+        this.mealItems = new ArrayList<>();
+    }
+
+    public Meal( MealType mealType, double totalCalories, double totalProtein, double totalFat, double totalCarbs) {
+
         this.mealType = mealType;
         this.totalCalories = totalCalories;
         this.totalProtein = totalProtein;
@@ -43,6 +47,12 @@ public class Meal {
         this.totalCarbs = totalCarbs;
     }
 
-
+    public void addMealItem(MealItem mealItem) {
+        this.mealItems.add(mealItem);
+        totalCalories += mealItem.getFood().getCalories();
+        totalProtein += mealItem.getFood().getProtein();
+        totalFat += mealItem.getFood().getFat();
+        totalCarbs += mealItem.getFood().getCarbs();
+    }
 
 }
