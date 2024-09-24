@@ -10,4 +10,6 @@ import java.time.LocalDate;
 public interface DiaryRepository extends JpaRepository<Diary,Long> {
 
    Diary findDiaryByUserIdAndDate(Long id, LocalDate date);
+
+   Diary findDiaryByDate(LocalDate date);
 }

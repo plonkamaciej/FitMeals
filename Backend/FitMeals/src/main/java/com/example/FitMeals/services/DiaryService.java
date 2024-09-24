@@ -1,8 +1,10 @@
 package com.example.FitMeals.services;
 
+import com.example.FitMeals.models.AppUser;
 import com.example.FitMeals.models.Diary;
 import com.example.FitMeals.models.types.MealType;
 import com.example.FitMeals.repositories.DiaryRepository;
+import com.example.FitMeals.repositories.UserRepository;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -12,9 +14,11 @@ import java.util.Optional;
 public class DiaryService {
 
     private final DiaryRepository diaryRepository;
+    private final UserRepository userRepository;
 
-    public DiaryService(DiaryRepository diaryRepository) {
+    public DiaryService(DiaryRepository diaryRepository, UserRepository userRepository) {
         this.diaryRepository = diaryRepository;
+        this.userRepository = userRepository;
     }
 
     public Diary getDiaryByDateAndUser(Long userId, LocalDate date){
@@ -23,6 +27,17 @@ public class DiaryService {
 
     public Diary saveDiary(Diary diary) {
         return diaryRepository.save(diary);
+    }
+
+    public void saveDiary(Diary diary, LocalDate date, Long userId) {
+        AppUser user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        // Logika zapisu dziennika dla danego użytkownika
+        diary.setUser(user);
+        diary.setDate(date);
+
+        diaryRepository.save(diary);
     }
 
     public Optional<Diary> getDiaryById(Long id) {

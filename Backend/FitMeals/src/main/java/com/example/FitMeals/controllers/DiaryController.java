@@ -32,6 +32,14 @@ public class DiaryController {
         return diaryService.saveDiary(diary);
     }
 
+    // Zapisz lub zaktualizuj dziennik
+    @PostMapping("/{userId}/{date}")
+    public ResponseEntity<String> saveDiary(@PathVariable Long userId, @PathVariable String date, @RequestBody Diary diary) {
+        LocalDate diaryDate = LocalDate.parse(date);
+        diaryService.saveDiary(diary, diaryDate, userId);
+        return ResponseEntity.ok("Diary saved successfully");
+    }
+
     // Aktualizuj dziennik
     @PutMapping("/{id}")
     public ResponseEntity<Diary> updateDiary(@PathVariable Long id, @RequestBody Diary diary) {
