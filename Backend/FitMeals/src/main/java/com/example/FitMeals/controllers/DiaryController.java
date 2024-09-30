@@ -2,6 +2,7 @@ package com.example.FitMeals.controllers;
 
 import com.example.FitMeals.models.Diary;
 import com.example.FitMeals.services.DiaryService;
+import com.example.FitMeals.services.UserService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -14,16 +15,28 @@ import java.util.Optional;
 public class DiaryController {
 
     private final DiaryService diaryService;
+    private final UserService userService;
 
-    public DiaryController(DiaryService diaryService) {
+    public DiaryController(DiaryService diaryService, UserService userService) {
         this.diaryService = diaryService;
+        this.userService = userService;
     }
 
     // Pobierz dziennik użytkownika dla określonej daty
-    @GetMapping("/user/{userId}/date/{date}")
-    public Diary getDiaryByDateAndUser(@PathVariable Long userId, @PathVariable String date) {
-        LocalDate localDate = LocalDate.parse(date);
-        return diaryService.getDiaryByDateAndUser(userId, localDate);
+    @GetMapping("/{userId}/{date}")
+    public ResponseEntity<Diary> getDiaryByDate(@PathVariable String date, @PathVariable Long userId) {
+        LocalDate diaryDate = LocalDate.parse(date);
+        Optional<Diary> diary = diaryService.getDiaryByDateAndUser(userId, diaryDate);
+
+        if (diary.isPresent()) {
+            return ResponseEntity.ok(diary.get());
+        } else {
+            // Jeśli nie znaleziono dziennika na dany dzień, zwracamy pusty dziennik
+            Diary emptyDiary = new Diary();
+            emptyDiary.setDate(diaryDate);
+            emptyDiary.setUser(userService.getUserById(userId).get());
+            return ResponseEntity.ok(emptyDiary);
+        }
     }
 
     // Utwórz nowy dziennik
@@ -36,7 +49,7 @@ public class DiaryController {
     @PostMapping("/{userId}/{date}")
     public ResponseEntity<String> saveDiary(@PathVariable Long userId, @PathVariable String date, @RequestBody Diary diary) {
         LocalDate diaryDate = LocalDate.parse(date);
-        diaryService.saveDiary(diary, diaryDate, userId);
+        diaryService.saveOrUpdateDiary(diary, diaryDate, userId);
         return ResponseEntity.ok("Diary saved successfully");
     }
 

@@ -21,7 +21,7 @@ public class DiaryService {
         this.userRepository = userRepository;
     }
 
-    public Diary getDiaryByDateAndUser(Long userId, LocalDate date){
+    public Optional<Diary> getDiaryByDateAndUser(Long userId, LocalDate date){
         return diaryRepository.findDiaryByUserIdAndDate(userId,date);
     }
 
@@ -38,6 +38,29 @@ public class DiaryService {
         diary.setDate(date);
 
         diaryRepository.save(diary);
+    }
+
+    public void saveOrUpdateDiary(Diary diary, LocalDate date, Long userId) {
+        // Sprawdzamy czy dziennik na dany dzień i użytkownika już istnieje
+        Diary existingDiary = diaryRepository.findDiaryByUserIdAndDate(userId, date).get();
+        AppUser user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        if (existingDiary != null) {
+            // Aktualizacja istniejącego dziennika
+            existingDiary.setBreakfast(diary.getBreakfast());
+            existingDiary.setLunch(diary.getLunch());
+            existingDiary.setDinner(diary.getDinner());
+            existingDiary.setSnack(diary.getSnack());
+            existingDiary.setTotalCalories(diary.getTotalCalories());
+            existingDiary.setTotalProtein(diary.getTotalProtein());
+            existingDiary.setTotalFat(diary.getTotalFat());
+            existingDiary.setTotalCarbs(diary.getTotalCarbs());
+        } else {
+            // Tworzenie nowego dziennika
+            diary.setUser(user);
+            diary.setDate(date);
+            diaryRepository.save(diary);
+        }
     }
 
     public Optional<Diary> getDiaryById(Long id) {
