@@ -24,20 +24,15 @@ public class Meal {
     private MealType mealType;
 
     @OneToMany(mappedBy = "meal", cascade = CascadeType.ALL)
-    private List<Food> foodList;
+    private List<Food> foodList = new ArrayList<>();
 
     public Meal(MealType mealType) {
         this.mealType = mealType;
-        this.foodList = new ArrayList<>();
     }
 
 
     public void addFood(Food food) {
         this.foodList.add(food);
-//        totalCalories += food.getCalories();
-//        totalProtein += food.getProtein();
-//        totalFat += food.getFat();
-//        totalCarbs += food.getCarbs();
     }
 
 }

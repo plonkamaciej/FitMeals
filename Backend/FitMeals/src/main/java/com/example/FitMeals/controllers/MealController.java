@@ -1,5 +1,6 @@
 package com.example.FitMeals.controllers;
 
+import com.example.FitMeals.models.Food;
 import com.example.FitMeals.models.Meal;
 import com.example.FitMeals.models.MealItem;
 import com.example.FitMeals.models.types.MealType;
@@ -36,6 +37,13 @@ public class MealController {
     @PostMapping
     public Meal createMeal(@RequestBody Meal mealToSave) {
         return mealService.saveMeal(mealToSave);
+    }
+
+    @PostMapping("/{mealId}")
+    public Meal addFood(@PathVariable Long mealId,@RequestBody Food food){
+        Meal meal = mealService.getMealById(mealId).get();
+        meal.addFood(food);
+       return mealService.saveMeal(meal);
     }
 
     @PutMapping("/{id}")
