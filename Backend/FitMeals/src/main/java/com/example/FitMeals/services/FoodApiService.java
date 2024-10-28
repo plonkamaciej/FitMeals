@@ -53,7 +53,7 @@ public class FoodApiService {
         food.setFat((int) foodDto.getNutrients().getFAT());
         food.setCarbs((int) foodDto.getNutrients().getCHOCDF());
 
-        foodRepository.save(food);
+
         return food;
     }
 
