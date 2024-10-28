@@ -1,5 +1,6 @@
 package com.example.FitMeals.models;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -24,11 +25,11 @@ public class Food {
     private double fat;
     private double carbs;
     private Double weight =100D;
+
     @ManyToOne
-    @JoinColumn(name = "meal_id")
+    @JoinColumn(name = "meal_id")  // klucz obcy w tabeli Food wskazujący na Meal
+    @JsonBackReference
     private Meal meal;
-//    @OneToMany(mappedBy = "food")
-//    private Set<MealItem> mealItems;
 
 
     public Food(String name, double calories, double protein, double fat, double carbs, Double weight) {

@@ -1,6 +1,7 @@
 package com.example.FitMeals.models;
 
 import com.example.FitMeals.models.types.MealType;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -23,15 +24,17 @@ public class Meal {
     private Long id;
     private MealType mealType;
 
-    @OneToMany(mappedBy = "meal", cascade = CascadeType.ALL)
-    private List<Food> foodList = new ArrayList<>();
+    @OneToMany(mappedBy = "meal", cascade = CascadeType.ALL,fetch = FetchType.EAGER)
+    @JsonManagedReference
+    private List<Food> foodList;
 
-    public Meal(MealType mealType) {
+    public Meal(MealType mealType, List<Food> foodList) {
         this.mealType = mealType;
+        this.foodList = foodList;
     }
 
-
     public void addFood(Food food) {
+        food.setMeal(this);
         this.foodList.add(food);
     }
 

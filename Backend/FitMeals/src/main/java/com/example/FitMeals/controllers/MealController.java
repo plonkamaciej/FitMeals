@@ -6,6 +6,7 @@ import com.example.FitMeals.models.MealItem;
 import com.example.FitMeals.models.types.MealType;
 import com.example.FitMeals.services.FoodService;
 import com.example.FitMeals.services.MealService;
+import com.example.FitMeals.services.UserService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -18,10 +19,12 @@ public class MealController {
 
     private final MealService mealService;
     private final FoodService foodService;
+    private final UserService userService;
 
-    public MealController(MealService mealService, FoodService foodService) {
+    public MealController(MealService mealService, FoodService foodService, UserService userService) {
         this.mealService = mealService;
         this.foodService = foodService;
+        this.userService = userService;
     }
 
     @GetMapping
@@ -36,6 +39,9 @@ public class MealController {
 
     @PostMapping
     public Meal createMeal(@RequestBody Meal mealToSave) {
+        for (Food food : mealToSave.getFoodList()) {
+            food.setMeal(mealToSave); // Ustawiamy meal na każdy obiekt Food
+        }
         return mealService.saveMeal(mealToSave);
     }
 
