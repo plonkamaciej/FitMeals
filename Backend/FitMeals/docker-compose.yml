@@ -1,4 +1,3 @@
-version: '3.8'
 services:
   db:
     image: postgres:latest
@@ -12,24 +11,23 @@ services:
       - postgres_data:/var/lib/postgresql/data
     networks:
       - fitmeals_network
+
   app:
-    image: fitmeals-app
+    build:
+      context: .  # Set the build context to the current directory
     depends_on:
       - db
     ports:
-      - "8081:8081"  # Udostępnienie backendu na hoście
+      - "8081:8081"  # Expose the backend on the host
     environment:
       SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/fitMeals_app
       SPRING_DATASOURCE_USERNAME: postgres
       SPRING_DATASOURCE_PASSWORD: root
     networks:
-      - fitmeals_network  # Przypisanie sieci
+      - fitmeals_network
 
 networks:
   fitmeals_network:
-    driver: bridge  # Użycie sieci typu bridge
-    internal: true
-  fitmeals-exposed:
     driver: bridge
 
 volumes:
