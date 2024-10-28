@@ -40,6 +40,7 @@ public class FoodController {
 
     @PostMapping
     public Food createFood(@RequestBody Food food) {
+
         return foodService.saveFood(food);
     }
 
@@ -57,4 +58,5 @@ public class FoodController {
     public void deleteFood(@PathVariable Long id) {
         foodService.deleteFood(id);
     }
+
 }

@@ -1,6 +1,7 @@
 package com.example.FitMeals.controllers;
 
 import com.example.FitMeals.models.Diary;
+import com.example.FitMeals.models.Meal;
 import com.example.FitMeals.services.DiaryService;
 import com.example.FitMeals.services.UserService;
 import org.springframework.http.ResponseEntity;
@@ -24,7 +25,8 @@ public class DiaryController {
 
     // Pobierz dziennik użytkownika dla określonej daty
     @GetMapping("/{userId}/{date}")
-    public ResponseEntity<Diary> getDiaryByDate(@PathVariable String date, @PathVariable Long userId) {
+    public ResponseEntity<Diary> getDiaryByDate(@PathVariable Long userId,@PathVariable String date) {
+        System.out.println("Received userId: " + userId);
         LocalDate diaryDate = LocalDate.parse(date);
         Optional<Diary> diary = diaryService.getDiaryByDateAndUser(userId, diaryDate);
 
@@ -40,18 +42,20 @@ public class DiaryController {
     }
 
     // Utwórz nowy dziennik
-    @PostMapping
-    public Diary createDiary(@RequestBody Diary diary) {
-        return diaryService.saveDiary(diary);
-    }
+//    @PostMapping
+//    public Diary createDiary(@RequestBody Diary diary) {
+//        return diaryService.saveDiary(diary);
+//    }
 
     // Zapisz lub zaktualizuj dziennik
-    @PostMapping("/{userId}/{date}")
-    public ResponseEntity<String> saveDiary(@PathVariable Long userId, @PathVariable String date, @RequestBody Diary diary) {
-        LocalDate diaryDate = LocalDate.parse(date);
-        diaryService.saveOrUpdateDiary(diary, diaryDate, userId);
+    @PostMapping
+    public ResponseEntity<String> saveDiary( @RequestBody Diary diary) {
+        diaryService.saveOrUpdateDiary(diary);
         return ResponseEntity.ok("Diary saved successfully");
     }
+
+
+
 
     // Aktualizuj dziennik
     @PutMapping("/{id}")

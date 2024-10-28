@@ -33,4 +33,11 @@ public class MealItem {
         this.food = food;
         this.quantity = quantity;
     }
+
+    public MealItem(Food food, int quantity) {
+        this.food = food;
+        this.quantity = quantity;
+    }
+
+
 }

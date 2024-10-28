@@ -7,8 +7,30 @@ services:
       POSTGRES_DB: fitMeals_app
       POSTGRES_PASSWORD: root
     ports:
-      - "5433:5433"
+      - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    networks:
+      - fitmeals_network
+  app:
+    image: fitmeals-app
+    depends_on:
+      - db
+    ports:
+      - "8081:8081"  # Udostępnienie backendu na hoście
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/fitMeals_app
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: root
+    networks:
+      - fitmeals_network  # Przypisanie sieci
+
+networks:
+  fitmeals_network:
+    driver: bridge  # Użycie sieci typu bridge
+    internal: true
+  fitmeals-exposed:
+    driver: bridge
+
 volumes:
   postgres_data:

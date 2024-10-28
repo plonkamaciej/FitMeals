@@ -1,6 +1,9 @@
 package com.example.FitMeals.controllers;
 
 import com.example.FitMeals.models.Meal;
+import com.example.FitMeals.models.MealItem;
+import com.example.FitMeals.models.types.MealType;
+import com.example.FitMeals.services.FoodService;
 import com.example.FitMeals.services.MealService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -13,9 +16,11 @@ import java.util.List;
 public class MealController {
 
     private final MealService mealService;
+    private final FoodService foodService;
 
-    public MealController(MealService mealService) {
+    public MealController(MealService mealService, FoodService foodService) {
         this.mealService = mealService;
+        this.foodService = foodService;
     }
 
     @GetMapping
@@ -29,8 +34,8 @@ public class MealController {
     }
 
     @PostMapping
-    public Meal createMeal(@RequestBody Meal meal) {
-        return mealService.saveMeal(meal);
+    public Meal createMeal(@RequestBody Meal mealToSave) {
+        return mealService.saveMeal(mealToSave);
     }
 
     @PutMapping("/{id}")
@@ -46,5 +51,10 @@ public class MealController {
     @DeleteMapping("/{id}")
     public void deleteMeal(@PathVariable Long id) {
         mealService.deleteMeal(id);
+    }
+
+    @DeleteMapping
+    public void deleteAllMeals(){
+        mealService.deleteAllMeals();
     }
 }

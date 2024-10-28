@@ -23,17 +23,37 @@ public class Food {
     private double protein;
     private double fat;
     private double carbs;
+    private Double weight =100D;
+    @ManyToOne
+    @JoinColumn(name = "meal_id")
+    private Meal meal;
+//    @OneToMany(mappedBy = "food")
+//    private Set<MealItem> mealItems;
 
-    @OneToMany(mappedBy = "food")
-    private Set<MealItem> mealItems;
 
-
-    public Food(String name, double calories, double protein, double fat, double carbs, Set<MealItem> mealItems) {
+    public Food(String name, double calories, double protein, double fat, double carbs, Double weight) {
         this.name = name;
         this.calories = calories;
         this.protein = protein;
         this.fat = fat;
         this.carbs = carbs;
-        this.mealItems = mealItems;
+        this.weight = weight;
     }
+
+    public Food(String name, double calories, double protein, double fat, double carbs, double weight) {
+        this.name = name;
+        this.calories = calories;
+        this.protein = protein;
+        this.fat = fat;
+        this.carbs = carbs;
+        this.weight =weight;
+    }
+
+    public void setMacros(){
+        this.setCalories(this.calories*this.weight/100);
+        this.setProtein(this.protein*this.weight/100);
+        this.setFat(this.fat*this.weight/100);
+        this.setCarbs(this.carbs*this.weight/100);
+    }
+
 }

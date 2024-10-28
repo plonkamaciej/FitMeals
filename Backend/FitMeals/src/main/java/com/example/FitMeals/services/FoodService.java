@@ -27,7 +27,10 @@ public class FoodService {
     }
 
     public Food saveFood(Food food) {
-        return foodRepository.save(food);
+        if (foodRepository.getFoodByName(food.getName()).isEmpty()){
+            return foodRepository.save(food);
+        }
+       return food;
     }
 
     public void deleteFood(Long id) {

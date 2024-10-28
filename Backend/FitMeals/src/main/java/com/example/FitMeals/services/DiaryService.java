@@ -40,10 +40,10 @@ public class DiaryService {
         diaryRepository.save(diary);
     }
 
-    public void saveOrUpdateDiary(Diary diary, LocalDate date, Long userId) {
+    public void saveOrUpdateDiary(Diary diary) {
         // Sprawdzamy czy dziennik na dany dzień i użytkownika już istnieje
-        Diary existingDiary = diaryRepository.findDiaryByUserIdAndDate(userId, date).get();
-        AppUser user = userRepository.findById(userId)
+        Diary existingDiary = diaryRepository.findDiaryByUserIdAndDate(diary.getUser().getId(), diary.getDate()).get();
+        AppUser user = userRepository.findById(diary.getUser().getId())
                 .orElseThrow(() -> new RuntimeException("User not found"));
         if (existingDiary != null) {
             // Aktualizacja istniejącego dziennika
@@ -51,14 +51,10 @@ public class DiaryService {
             existingDiary.setLunch(diary.getLunch());
             existingDiary.setDinner(diary.getDinner());
             existingDiary.setSnack(diary.getSnack());
-            existingDiary.setTotalCalories(diary.getTotalCalories());
-            existingDiary.setTotalProtein(diary.getTotalProtein());
-            existingDiary.setTotalFat(diary.getTotalFat());
-            existingDiary.setTotalCarbs(diary.getTotalCarbs());
+            diaryRepository.save(existingDiary);
         } else {
             // Tworzenie nowego dziennika
             diary.setUser(user);
-            diary.setDate(date);
             diaryRepository.save(diary);
         }
     }

@@ -1,5 +1,6 @@
 package com.example.FitMeals.services;
 
+import com.example.FitMeals.models.Food;
 import com.example.FitMeals.models.Meal;
 import com.example.FitMeals.models.MealItem;
 import com.example.FitMeals.models.types.MealType;
@@ -35,10 +36,14 @@ public class MealService {
         mealRepository.deleteById(id);
     }
 
-    public Meal updateMeal(Long id, List<MealItem> mealItems) {
+    public void deleteAllMeals(){
+        mealRepository.deleteAll();
+    }
+
+    public Meal updateMeal(Long id, List<Food> mealItems) {
         Meal meal = mealRepository.findById(id).get();
-        for(MealItem m: mealItems){
-                meal.addMealItem(m);
+        for(Food m: mealItems){
+                meal.addFood(m);
             }
             mealRepository.save(meal);
 

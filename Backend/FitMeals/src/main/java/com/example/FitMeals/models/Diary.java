@@ -36,8 +36,18 @@ public class Diary {
     @OneToOne(cascade = CascadeType.ALL)
     private Meal snack;
 
-    private double totalCalories;
-    private double totalProtein;
-    private double totalFat;
-    private double totalCarbs;
+//    private double totalCalories;
+//    private double totalProtein;
+//    private double totalFat;
+//    private double totalCarbs;
+
+
+    public Diary(AppUser user, LocalDate date, Meal breakfast, Meal lunch, Meal dinner, Meal snack) {
+        this.user = user;
+        this.date = date;
+        this.breakfast = breakfast;
+        this.lunch = lunch;
+        this.dinner = dinner;
+        this.snack = snack;
+    }
 }
