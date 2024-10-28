@@ -29,8 +29,10 @@ public class UserController {
     }
 
     @GetMapping("/{id}")
-    public AppUser getUserById(@PathVariable Long id) {
-        return userService.getUserById(id).orElse(null);
+    public ResponseEntity<AppUser> getUserById(@PathVariable Long id) {
+        return userService.getUserById(id)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
     }
 
 
@@ -50,6 +52,15 @@ public class UserController {
         userService.saveUser(user);
         return ResponseEntity.ok(user);
     }
+
+
+    @GetMapping("/{id}/calories")
+    public ResponseEntity<Double> getDailyCalorieRequirement(@PathVariable Long id) {
+        return userService.getUserById(id)
+                .map(user -> ResponseEntity.ok(user.getDailyCalorieRequirement()))
+                .orElse(ResponseEntity.notFound().build());
+    }
+
 
     @GetMapping("/editUser/{id}")
     public String showEditForm(@PathVariable Long id, Model model) {

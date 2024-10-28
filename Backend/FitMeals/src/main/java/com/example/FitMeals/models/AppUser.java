@@ -1,9 +1,8 @@
 package com.example.FitMeals.models;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import com.example.FitMeals.models.types.ActivityLevel;
+import com.example.FitMeals.models.types.Gender;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -23,6 +22,18 @@ public class AppUser {
     private String password;
     private String email;
     private String role;
+    @Column(nullable = false,columnDefinition = "integer default 0")
+    private int age;
+    @Column(nullable = false,columnDefinition = "integer default 0")
+    private double weight;
+    @Column(nullable = false,columnDefinition = "integer default 0")
+    private double height;
+    @Column(nullable = false,columnDefinition = "integer default 0")
+    private Gender gender;
+    @Column(nullable = false,columnDefinition = "integer default 0")
+    private ActivityLevel activityLevel;
+    @Column(nullable = false,columnDefinition = "integer default 0")
+    private double dailyCalorieRequirement;
 
 
 
@@ -33,5 +44,14 @@ public class AppUser {
         this.role = role;
     }
 
-
+    public AppUser(String username, String password, String email, int age, double weight, double height, Gender gender, ActivityLevel activityLevel) {
+        this.username = username;
+        this.password = password;
+        this.email = email;
+        this.age = age;
+        this.weight = weight;
+        this.height = height;
+        this.gender = gender;
+        this.activityLevel = activityLevel;
+    }
 }

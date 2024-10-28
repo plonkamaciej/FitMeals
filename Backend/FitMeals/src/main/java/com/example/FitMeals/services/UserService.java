@@ -40,8 +40,25 @@ public class UserService {
     public Optional<AppUser> updateUser(AppUser user) {
         Optional<AppUser> userOptional = userRepository.findById(user.getId());
         if (userOptional.isPresent()) {
-            userRepository.save(user);
+            AppUser existingUser = userOptional.get();
+            existingUser.setAge(user.getAge());
+            existingUser.setWeight(user.getWeight());
+            existingUser.setHeight(user.getHeight());
+            existingUser.setActivityLevel(user.getActivityLevel());
+            calculateDailyCalorieRequirement(existingUser);
+            userRepository.save(existingUser);
         }
         return userOptional;
+    }
+
+    private void calculateDailyCalorieRequirement(AppUser user) {
+        double bmr;
+        if (user.getGender().equals("male")) {
+            bmr = 88.362 + (13.397 * user.getWeight()) + (4.799 * user.getHeight()) - (5.677 * user.getAge());
+        } else {
+            bmr = 447.593 + (9.247 * user.getWeight()) + (3.098 * user.getHeight()) - (4.330 * user.getAge());
+        }
+        double activityFactor = user.getActivityLevel().getFactor();
+        user.setDailyCalorieRequirement(bmr * activityFactor);
     }
 }

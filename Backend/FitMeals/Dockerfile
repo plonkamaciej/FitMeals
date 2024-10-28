@@ -1,5 +1,5 @@
-FROM ubuntu:latest
+FROM openjdk:17-jdk-alpine
 LABEL authors="michk"
-VOLUME /tmp
-COPY target/your-app-name.jar app.jar
-ENTRYPOINT ["java","-jar","/app.jar"]
+COPY target/FitMeals-0.0.1-SNAPSHOT.jar /app/
+ENTRYPOINT ["java","-jar","/app/FitMeals-0.0.1-SNAPSHOT.jar"]
+EXPOSE 8081
