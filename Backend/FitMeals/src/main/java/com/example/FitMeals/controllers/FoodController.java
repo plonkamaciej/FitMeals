@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@CrossOrigin
+@CrossOrigin(origins = "*") // Allow all origins for this controlle
 @RequestMapping("/api/foods")
 public class FoodController {
 

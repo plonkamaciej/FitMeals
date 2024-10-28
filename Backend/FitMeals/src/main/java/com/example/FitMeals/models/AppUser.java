@@ -24,15 +24,15 @@ public class AppUser {
     private String role;
     @Column(nullable = false,columnDefinition = "integer default 0")
     private int age;
-    @Column(nullable = false,columnDefinition = "integer default 0")
+    //@Column(nullable = false,columnDefinition = "double default 0")
     private double weight;
-    @Column(nullable = false,columnDefinition = "integer default 0")
+    //@Column(nullable = false,columnDefinition = "integer default 0")
     private double height;
-    @Column(nullable = false,columnDefinition = "integer default 0")
+    //@Column(nullable = false,columnDefinition = "integer default 0")
     private Gender gender;
-    @Column(nullable = false,columnDefinition = "integer default 0")
+    //Column(nullable = false,columnDefinition = "integer default 0")
     private ActivityLevel activityLevel;
-    @Column(nullable = false,columnDefinition = "integer default 0")
+   // @Column(nullable = false,columnDefinition = "integer default 0")
     private double dailyCalorieRequirement;
 
 
