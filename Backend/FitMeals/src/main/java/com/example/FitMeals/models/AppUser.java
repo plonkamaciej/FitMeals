@@ -36,6 +36,11 @@ public class AppUser {
     private double dailyCalorieRequirement;
 
 
+    public AppUser(Long id, String username, String password) {
+        this.id = id;
+        this.username = username;
+        this.password = password;
+    }
 
     public AppUser(String username, String password, String email, String role) {
         this.username = username;

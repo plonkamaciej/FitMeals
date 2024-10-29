@@ -8,6 +8,7 @@ import com.example.FitMeals.repositories.UserRepository;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -19,6 +20,11 @@ public class DiaryService {
     public DiaryService(DiaryRepository diaryRepository, UserRepository userRepository) {
         this.diaryRepository = diaryRepository;
         this.userRepository = userRepository;
+    }
+
+
+    public List<Diary> getAllDiariesByUserId(Long userId){
+        return diaryRepository.findAllByUserId(userId);
     }
 
     public Optional<Diary> getDiaryByDateAndUser(Long userId, LocalDate date){
@@ -42,18 +48,20 @@ public class DiaryService {
 
     public void saveOrUpdateDiary(Diary diary) {
         // Sprawdzamy czy dziennik na dany dzień i użytkownika już istnieje
-        Diary existingDiary = diaryRepository.findDiaryByUserIdAndDate(diary.getUser().getId(), diary.getDate()).get();
+        Optional<Diary> existingDiary = diaryRepository.findDiaryByUserIdAndDate(diary.getUser().getId(), diary.getDate());
         AppUser user = userRepository.findById(diary.getUser().getId())
                 .orElseThrow(() -> new RuntimeException("User not found"));
-        if (existingDiary != null) {
+        if (existingDiary.isPresent()) {
             // Aktualizacja istniejącego dziennika
-            existingDiary.setBreakfast(diary.getBreakfast());
-            existingDiary.setLunch(diary.getLunch());
-            existingDiary.setDinner(diary.getDinner());
-            existingDiary.setSnack(diary.getSnack());
-            diaryRepository.save(existingDiary);
+            Diary dbDiary = existingDiary.get();
+            dbDiary.setBreakfast(diary.getBreakfast());
+            dbDiary.setLunch(diary.getLunch());
+            dbDiary.setDinner(diary.getDinner());
+            dbDiary.setSnack(diary.getSnack());
+            diaryRepository.save(dbDiary);
         } else {
             // Tworzenie nowego dziennika
+
             diary.setUser(user);
             diaryRepository.save(diary);
         }

@@ -8,6 +8,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Optional;
 
 @RestController
@@ -22,6 +23,13 @@ public class DiaryController {
         this.diaryService = diaryService;
         this.userService = userService;
     }
+
+
+    @GetMapping("/{userId}")
+    public List<Diary> getAllDiaries(@PathVariable Long userId) {
+        return diaryService.getAllDiariesByUserId(userId);
+    }
+
 
     // Pobierz dziennik użytkownika dla określonej daty
     @GetMapping("/{userId}/{date}")
