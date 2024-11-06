@@ -35,6 +35,15 @@ public class AppUser {
    // @Column(nullable = false,columnDefinition = "integer default 0")
     private double dailyCalorieRequirement;
 
+    @Column(nullable = false, columnDefinition = "double precision default 0")
+    private double proteinGoal;
+
+    @Column(nullable = false, columnDefinition = "double precision default 0")
+    private double carbsGoal;
+
+    @Column(nullable = false, columnDefinition = "double precision default 0")
+    private double fatGoal;
+
 
     public AppUser(Long id, String username, String password) {
         this.id = id;

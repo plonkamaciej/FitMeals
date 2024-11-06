@@ -1,6 +1,8 @@
 package com.example.FitMeals.controllers;
 
 
+import com.example.FitMeals.dto.DailyRequirements;
+import com.example.FitMeals.dto.UserInputDto;
 import com.example.FitMeals.models.AppUser;
 import com.example.FitMeals.services.UserService;
 import org.springframework.http.HttpStatus;
@@ -10,6 +12,7 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.Optional;
 
 @RestController
@@ -101,6 +104,33 @@ public class UserController {
         } else {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid username or password");
         }
+    }
+
+    @GetMapping("/{userId}/daily-requirements")
+    public DailyRequirements getDailyRequirements(@PathVariable Long userId) {
+        AppUser user = userService.getUserById(userId).orElseThrow(()->new NoSuchElementException("User with this id does not exist!"));
+        userService.calculateDailyCalorieRequirement(user);
+        return new DailyRequirements(user.getDailyCalorieRequirement(), user.getProteinGoal(), user.getCarbsGoal(), user.getFatGoal());
+    }
+
+    @PostMapping("/{userId}/calculate-daily-requirement")
+    public DailyRequirements calculateDailyRequirement(@PathVariable Long userId,@RequestBody UserInputDto userInputDto) {
+        AppUser user = userService.getUserById(userId).orElseThrow(()->new NoSuchElementException("User with this id does not exist!"));
+        user.setWeight(userInputDto.getWeight());
+        user.setHeight(userInputDto.getHeight());
+        user.setAge(userInputDto.getAge());
+        user.setGender(userInputDto.getGender());
+        user.setActivityLevel(userInputDto.getActivityLevel());
+
+        userService.calculateDailyCalorieRequirement(user);
+        userService.updateUser(user);
+
+        return new DailyRequirements(
+                user.getDailyCalorieRequirement(),
+                user.getProteinGoal(),
+                user.getCarbsGoal(),
+                user.getFatGoal()
+        );
     }
 
     @DeleteMapping("/{id}")
