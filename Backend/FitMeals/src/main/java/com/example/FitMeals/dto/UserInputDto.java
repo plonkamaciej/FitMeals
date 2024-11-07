@@ -2,6 +2,7 @@ package com.example.FitMeals.dto;
 
 import com.example.FitMeals.models.types.ActivityLevel;
 import com.example.FitMeals.models.types.Gender;
+import com.example.FitMeals.models.types.GoalType;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -18,4 +19,5 @@ public class UserInputDto {
     private double height;
     private Gender gender;
     private ActivityLevel activityLevel;
+    private GoalType goal;
 }

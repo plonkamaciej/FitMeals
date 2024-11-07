@@ -123,6 +123,8 @@ public class UserController {
         user.setActivityLevel(userInputDto.getActivityLevel());
 
         userService.calculateDailyCalorieRequirement(user);
+        double calorieWithGoal = getCalorieRequirementWithGoal(userInputDto, user);
+        user.setDailyCalorieRequirement(calorieWithGoal);
         userService.updateUser(user);
 
         return new DailyRequirements(
@@ -133,8 +135,31 @@ public class UserController {
         );
     }
 
+
+
     @DeleteMapping("/{id}")
     public void deleteUser(@PathVariable Long id) {
         userService.deleteUser(id);
+    }
+
+
+
+    private static double getCalorieRequirementWithGoal(UserInputDto userInputDto, AppUser user) {
+        double calorieRequirement = user.getDailyCalorieRequirement();
+        switch (userInputDto.getGoal()) {
+            case LOSE_WEIGHT:
+                calorieRequirement *= 0.9; // Zmniejszenie o 10%
+                break;
+            case GAIN_WEIGHT:
+                calorieRequirement *= 1.1; // Zwiększenie o 10%
+                break;
+            case MAINTAIN_WEIGHT:
+            default:
+                // Bez zmian
+                break;
+        }
+
+        double calorieWithGoal = Math.round(calorieRequirement);
+        return calorieWithGoal;
     }
 }
