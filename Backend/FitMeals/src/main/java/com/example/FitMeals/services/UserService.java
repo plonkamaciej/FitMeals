@@ -3,6 +3,7 @@ package com.example.FitMeals.services;
 import com.example.FitMeals.models.AppUser;
 import com.example.FitMeals.models.types.Gender;
 import com.example.FitMeals.repositories.UserRepository;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.Optional;
@@ -11,9 +12,11 @@ import java.util.Optional;
 public class UserService {
 
     private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
 
-    public UserService(UserRepository userRepository) {
+    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
+        this.passwordEncoder = passwordEncoder;
     }
 
     public List<AppUser> getAllUsers() {
@@ -28,6 +31,14 @@ public class UserService {
   public Optional<AppUser> getUserByUsername(String username){
         return userRepository.findByUsername(username);
   }
+
+
+    public AppUser registerUser(AppUser user){
+        user.setRole("USER");
+        user.setPassword(passwordEncoder.encode(user.getPassword()));
+       return userRepository.save(user);
+    }
+
 
     public AppUser saveUser(AppUser user) {
         user.setRole("USER");
@@ -51,6 +62,21 @@ public class UserService {
         }
         return userOptional;
     }
+
+    public AppUser authenticate(String username, String rawPassword) {
+        Optional<AppUser> optionalUser = userRepository.findByUsername(username);
+
+        if (optionalUser.isPresent()) {
+            AppUser user = optionalUser.get();
+            // Sprawdzamy, czy zakodowane hasło pasuje do podanego
+            if (passwordEncoder.matches(rawPassword, user.getPassword())) {
+                return user;
+            }
+        }
+        return null; // Jeśli użytkownik nie istnieje lub hasło jest niepoprawne
+    }
+
+
 
     public void calculateDailyCalorieRequirement(AppUser user) {
         double bmr;

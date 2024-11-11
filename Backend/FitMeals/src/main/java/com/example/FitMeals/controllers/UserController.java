@@ -2,8 +2,11 @@ package com.example.FitMeals.controllers;
 
 
 import com.example.FitMeals.dto.DailyRequirements;
+import com.example.FitMeals.dto.LoginRequest;
 import com.example.FitMeals.dto.UserInputDto;
 import com.example.FitMeals.models.AppUser;
+import com.example.FitMeals.security.JwtUtil;
+import com.example.FitMeals.security.LoginResponse;
 import com.example.FitMeals.services.UserService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -91,20 +94,37 @@ public class UserController {
         if (userService.getUserByUsername(user.getUsername()).isPresent()) {
             return ResponseEntity.status(HttpStatus.CONFLICT).body("Username already exists");
         }
-        userService.saveUser(user);
+        userService.registerUser(user);
         return ResponseEntity.ok("User registered successfully");
     }
 
-    @PostMapping("/login")
-    public ResponseEntity<String> loginUser(@RequestBody AppUser loginUser) {
-        Optional<AppUser> user = userService.getUserByUsername(loginUser.getUsername());
+//    @PostMapping("/login")
+//    public ResponseEntity<String> loginUser(@RequestBody AppUser loginUser) {
+//        Optional<AppUser> user = userService.getUserByUsername(loginUser.getUsername());
+//
+//        if (user.isPresent() && user.get().getPassword().equals(loginUser.getPassword())) {
+//            return ResponseEntity.ok("Login successful");
+//        } else {
+//            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid username or password");
+//        }
+//    }
 
-        if (user.isPresent() && user.get().getPassword().equals(loginUser.getPassword())) {
-            return ResponseEntity.ok("Login successful");
+    @PostMapping("/login")
+    public ResponseEntity<?> login(@RequestBody LoginRequest loginRequest) {
+        // Wyszukiwanie użytkownika i weryfikacja hasła
+        AppUser user = userService.authenticate(loginRequest.getUsername(), loginRequest.getPassword());
+
+        if (user != null) {
+            String token = JwtUtil.generateToken(user.getUsername());
+            return ResponseEntity.ok(new LoginResponse(token));
         } else {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid username or password");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid credentials");
         }
     }
+
+
+
+
 
     @GetMapping("/{userId}/daily-requirements")
     public DailyRequirements getDailyRequirements(@PathVariable Long userId) {
