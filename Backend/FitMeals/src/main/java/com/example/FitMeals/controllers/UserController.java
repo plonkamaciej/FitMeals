@@ -2,6 +2,7 @@ package com.example.FitMeals.controllers;
 
 
 import com.example.FitMeals.dto.DailyRequirements;
+import com.example.FitMeals.dto.LoginOutput;
 import com.example.FitMeals.dto.LoginRequest;
 import com.example.FitMeals.dto.UserInputDto;
 import com.example.FitMeals.models.AppUser;
@@ -116,7 +117,7 @@ public class UserController {
 
         if (user != null) {
             String token = JwtUtil.generateToken(user.getUsername());
-            return ResponseEntity.ok(new LoginResponse(token));
+            return ResponseEntity.ok(new LoginOutput(user.getId(),token));
         } else {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid credentials");
         }
