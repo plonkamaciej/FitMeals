@@ -2,6 +2,7 @@ package com.example.FitMeals.controllers;
 
 import com.example.FitMeals.models.Diary;
 import com.example.FitMeals.models.Meal;
+import com.example.FitMeals.models.types.MealType;
 import com.example.FitMeals.services.DiaryService;
 import com.example.FitMeals.services.UserService;
 import org.springframework.http.ResponseEntity;
@@ -76,6 +77,59 @@ public class DiaryController {
         diaryService.saveDiary(diary);
         return ResponseEntity.ok(diary);
     }
+
+
+    @PutMapping("/{userId}/{date}")
+    public ResponseEntity<Diary> updateMealInDiary(
+            @PathVariable Long userId,
+            @PathVariable String date,
+            @RequestBody Meal updatedMeal) {
+
+        // Konwersja daty z ciągu znaków
+        LocalDate diaryDate = LocalDate.parse(date);
+
+        // Pobierz istniejący dziennik dla użytkownika i daty
+        Optional<Diary> existingDiaryOpt = diaryService.getDiaryByDateAndUser(userId, diaryDate);
+
+        Diary diary;
+        if (existingDiaryOpt.isPresent()) {
+            // Jeśli dziennik istnieje, pobierz go
+            diary = existingDiaryOpt.get();
+        } else {
+            // Jeśli dziennik nie istnieje, stwórz nowy
+            diary = new Diary();
+            diary.setDate(diaryDate);
+            diary.setUser(userService.getUserById(userId).orElseThrow(() ->
+                    new RuntimeException("Nie znaleziono użytkownika o podanym ID")));
+        }
+
+        // Zaktualizuj odpowiedni posiłek w dzienniku
+        switch (updatedMeal.getMealType()) {
+            case BREAKFAST:
+                diary.setBreakfast(updatedMeal);
+                break;
+            case LUNCH:
+                diary.setLunch(updatedMeal);
+                break;
+            case DINNER:
+                diary.setDinner(updatedMeal);
+                break;
+            case SNACK:
+                diary.setSnack(updatedMeal);
+                break;
+            default:
+                return ResponseEntity.badRequest().build();
+        }
+
+        // Zapisz zmiany w dzienniku
+        Diary savedDiary = diaryService.saveDiary(diary);
+
+        return ResponseEntity.ok(savedDiary);
+    }
+
+
+
+
 
     // Usuń dziennik
     @DeleteMapping("/{id}")

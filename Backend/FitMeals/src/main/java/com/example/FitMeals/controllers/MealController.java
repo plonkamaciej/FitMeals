@@ -2,8 +2,6 @@ package com.example.FitMeals.controllers;
 
 import com.example.FitMeals.models.Food;
 import com.example.FitMeals.models.Meal;
-import com.example.FitMeals.models.MealItem;
-import com.example.FitMeals.models.types.MealType;
 import com.example.FitMeals.services.FoodService;
 import com.example.FitMeals.services.MealService;
 import com.example.FitMeals.services.UserService;
@@ -61,6 +59,11 @@ public class MealController {
         mealService.saveMeal(meal);
         return ResponseEntity.ok(meal);
     }
+
+
+
+
+
 
     @DeleteMapping("/{id}")
     public void deleteMeal(@PathVariable Long id) {

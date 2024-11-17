@@ -7,6 +7,7 @@ import com.example.FitMeals.models.types.MealType;
 import com.example.FitMeals.repositories.MealRepository;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
@@ -53,4 +54,5 @@ public class MealService {
     public Meal getMealByMealType(MealType mealType){
         return mealRepository.findMealByMealType(mealType);
     }
+
 }

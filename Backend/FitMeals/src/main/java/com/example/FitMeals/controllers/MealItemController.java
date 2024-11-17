@@ -10,7 +10,7 @@ import java.util.List;
 
 @RestController
 @CrossOrigin
-@RequestMapping("api/mealItems")
+@RequestMapping("/api/mealItems")
 public class MealItemController {
 
     private final MealItemService mealItemService;
