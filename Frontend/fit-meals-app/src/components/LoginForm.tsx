@@ -18,8 +18,8 @@ export function LoginForm() {
     e.preventDefault();
     try {
       const response = await axios.post('http://localhost:8081/api/users/login', formData);
-      alert(response.data);
       localStorage.setItem('token', response.data.token);
+      localStorage.setItem('userId', response.data.userId);
       navigate('/diary');
     } catch (error: any) {
       setErrorMessage(error.response?.data || 'Błąd logowania');

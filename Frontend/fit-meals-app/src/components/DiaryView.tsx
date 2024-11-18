@@ -4,7 +4,12 @@ import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from './ui/card';
 import { getSuggestions } from '../translations/foodTranslations';
-
+import Settings from './Settings';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription } from './ui/dialog';
+import { Alert, AlertTitle, AlertDescription } from './ui/alert';
+import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
+ 
 interface Meal {
   name: string;
   protein: number;
@@ -13,21 +18,21 @@ interface Meal {
   calories: number;
   weight: number;
 }
-
-
-
+ 
+ 
+ 
 interface DailyMeals {
   breakfast: Meal[];
   lunch: Meal[];
   dinner: Meal[];
 }
-
+ 
 interface DailyEntry {
   date: string;
   meals: DailyMeals;
   totalCalories: number;
 }
-
+ 
 interface APIFood {
   id: string | null;
   name: string;
@@ -38,20 +43,26 @@ interface APIFood {
   weight: number;
   meal: null;
 }
-
+ 
 interface MacroGoals {
   protein: number;
   carbs: number;
   fat: number;
 }
-
-
+ 
+interface DailyRequirements {
+  calories: number;
+  protein: number;
+  carbs: number;
+  fat: number;
+}
+ 
 function MealForm({ addMeal }: { addMeal: (meal: Meal) => void }) {
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [suggestions, setSuggestions] = useState<string[]>([]);
   const [selectedFood, setSelectedFood] = useState<APIFood | null>(null);
   const [weight, setWeight] = useState<number>(100);
-
+ 
   // Obsługa podpowiedzi
   useEffect(() => {
     if (searchQuery.length >= 2) {
@@ -60,10 +71,10 @@ function MealForm({ addMeal }: { addMeal: (meal: Meal) => void }) {
       setSuggestions([]);
     }
   }, [searchQuery]);
-
+ 
   const searchFoods = async (query: string) => {
     if (!query) return;
-  
+ 
     try {
       // Wyciągnij angielską nazwę z formatu "nazwa_pl (nazwa_eng)"
       const englishName = query.match(/\((.*?)\)$/)?.[1] || query;
@@ -72,7 +83,7 @@ function MealForm({ addMeal }: { addMeal: (meal: Meal) => void }) {
         console.error('Brak tokena JWT, nie można wykonać zapytania.');
         return;
       }
-  
+ 
       const response = await fetch(`http://localhost:8081/api/foods/search/${englishName}`, {
         method: 'GET',
         headers: {
@@ -80,13 +91,13 @@ function MealForm({ addMeal }: { addMeal: (meal: Meal) => void }) {
           'Content-Type': 'application/json'
         }
       });
-  
+ 
       // Dodaj sprawdzenie statusu odpowiedzi
       if (!response.ok) {
         console.error(`Błąd serwera: ${response.status} - ${response.statusText}`);
         return;
       }
-  
+ 
       const data = await response.json();
       if (data) {
         const foodWithId = {
@@ -101,8 +112,8 @@ function MealForm({ addMeal }: { addMeal: (meal: Meal) => void }) {
       console.error('Błąd podczas wyszukiwania:', error);
     }
   };
-  
-
+ 
+ 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (selectedFood) {
@@ -121,7 +132,7 @@ function MealForm({ addMeal }: { addMeal: (meal: Meal) => void }) {
       setSearchQuery('');
     }
   };
-
+ 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <div className="relative">
@@ -132,7 +143,7 @@ function MealForm({ addMeal }: { addMeal: (meal: Meal) => void }) {
           placeholder="Wyszukaj posiłek..."
           className="w-full"
         />
-        
+ 
         {/* Lista podpowiedzi */}
         {suggestions.length > 0 && (
           <div className="absolute z-10 w-full bg-white border rounded-md shadow-lg mt-1">
@@ -152,14 +163,14 @@ function MealForm({ addMeal }: { addMeal: (meal: Meal) => void }) {
           </div>
         )}
       </div>
-
+ 
       <Input 
         type="number" 
         value={weight} 
         onChange={(e) => setWeight(Number(e.target.value))} 
         placeholder="Waga (g)" 
       />
-      
+ 
       <Button 
         type="submit" 
         disabled={!selectedFood}
@@ -167,7 +178,7 @@ function MealForm({ addMeal }: { addMeal: (meal: Meal) => void }) {
       >
         Dodaj posiłek
       </Button>
-      
+ 
       {selectedFood && (
         <div className="mt-4 p-4 bg-gray-50 rounded-lg">
           <p className="font-medium">Wartości odżywcze na 100g:</p>
@@ -182,33 +193,65 @@ function MealForm({ addMeal }: { addMeal: (meal: Meal) => void }) {
     </form>
   );
 }
-
-function MealList({ meals }: { meals: Meal[] }) {
+ 
+function MealList({ meals, mealType, onDelete }: { 
+  meals: Meal[], 
+  mealType: keyof DailyMeals,
+  onDelete: (mealType: keyof DailyMeals, index: number) => void 
+}) {
   const totalNutrients = meals.reduce((acc, meal) => ({
     protein: acc.protein + meal.protein,
     fat: acc.fat + meal.fat,
     carbs: acc.carbs + meal.carbs,
     calories: acc.calories + meal.calories
   }), { protein: 0, fat: 0, carbs: 0, calories: 0 });
-
+ 
   return (
-    <div>
-      <ul>
+    <div className="space-y-4">
+      <ul className="space-y-2">
         {meals.map((meal, index) => (
-          <li key={index}>
-            {meal.name} ({meal.weight}g) - Białko: {meal.protein}g, Tłuszcz: {meal.fat}g, Węglowodany: {meal.carbs}g, Kalorie: {meal.calories}kcal
+          <li key={index} className="flex items-center justify-between p-2 bg-gray-50 rounded-lg">
+            <div className="flex-1">
+              <span className="font-medium">{meal.name}</span>
+              <div className="text-sm text-gray-600">
+                Białko: {meal.protein}g, Tłuszcz: {meal.fat}g, Węglowodany: {meal.carbs}g, 
+                Kalorie: {meal.calories}kcal, Waga: {meal.weight}g
+              </div>
+            </div>
+            <Button
+              variant="destructive"
+              size="sm"
+              onClick={() => onDelete(mealType, index)}
+              className=" ml-10"
+            >
+              x
+            </Button>
           </li>
         ))}
       </ul>
-      <div>
-        <strong>Suma:</strong> Białko: {Math.round(totalNutrients.protein * 10) / 10}g, Tłuszcz: {Math.round(totalNutrients.fat * 10) / 10}g, 
-        Węglowodany: {Math.round(totalNutrients.carbs * 10) / 10}g, Kalorie: {Math.round(totalNutrients.calories)}kcal
+      <div className="text-sm font-medium">
+        <strong>Suma:</strong> Białko: {Math.round(totalNutrients.protein * 10) / 10}g, 
+        Tłuszcz: {Math.round(totalNutrients.fat * 10) / 10}g, 
+        Węglowodany: {Math.round(totalNutrients.carbs * 10) / 10}g, 
+        Kalorie: {Math.round(totalNutrients.calories)}kcal
       </div>
     </div>
   );
 }
-
-function MealSection({ title, meals, addMeal }: { title: string, meals: Meal[], addMeal: (meal: Meal) => void }) {
+ 
+function MealSection({ 
+  title, 
+  meals, 
+  addMeal, 
+  mealType,
+  onDelete 
+}: { 
+  title: string, 
+  meals: Meal[], 
+  addMeal: (meal: Meal) => void,
+  mealType: keyof DailyMeals,
+  onDelete: (mealType: keyof DailyMeals, index: number) => void
+}) {
   return (
     <Card className="mb-4">
       <CardHeader>
@@ -218,77 +261,16 @@ function MealSection({ title, meals, addMeal }: { title: string, meals: Meal[], 
         <MealForm addMeal={addMeal} />
       </CardContent>
       <CardFooter>
-        <MealList meals={meals} />
+        <MealList 
+          meals={meals} 
+          mealType={mealType}
+          onDelete={onDelete}
+        />
       </CardFooter>
     </Card>
   );
 }
-
-function CaloryGoalSetter({ goal, setGoal }: { goal: number, setGoal: (goal: number) => void }) {
-  const [tempGoal, setTempGoal] = useState(goal);
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    setGoal(tempGoal);
-  };
-
-  return (
-    <form onSubmit={handleSubmit} className="flex gap-2">
-      <Input 
-        type="number" 
-        value={tempGoal} 
-        onChange={(e) => setTempGoal(Number(e.target.value))}
-        placeholder="Cel kaloryczny"
-      />
-      <Button type="submit">Ustaw cel</Button>
-    </form>
-  );
-}
-
-function MacroGoalSetter({ goals, setGoals }: { 
-  goals: MacroGoals, 
-  setGoals: (goals: MacroGoals) => void 
-}) {
-  const [tempGoals, setTempGoals] = useState(goals);
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    setGoals(tempGoals);
-  };
-
-  return (
-    <form onSubmit={handleSubmit} className="space-y-4">
-      <div className="grid grid-cols-3 gap-4">
-        <div>
-          <label className="block text-sm font-medium mb-1">Białko (g)</label>
-          <Input 
-            type="number" 
-            value={tempGoals.protein} 
-            onChange={(e) => setTempGoals({...tempGoals, protein: Number(e.target.value)})}
-          />
-        </div>
-        <div>
-          <label className="block text-sm font-medium mb-1">Węglowodany (g)</label>
-          <Input 
-            type="number" 
-            value={tempGoals.carbs} 
-            onChange={(e) => setTempGoals({...tempGoals, carbs: Number(e.target.value)})}
-          />
-        </div>
-        <div>
-          <label className="block text-sm font-medium mb-1">Tłuszcze (g)</label>
-          <Input 
-            type="number" 
-            value={tempGoals.fat} 
-            onChange={(e) => setTempGoals({...tempGoals, fat: Number(e.target.value)})}
-          />
-        </div>
-      </div>
-      <Button type="submit">Ustaw cele makroskładników</Button>
-    </form>
-  );
-}
-
+ 
 function ActivityCalendar({ entries, caloryGoal, onDateSelect, selectedDate }: { 
   entries: DailyEntry[], 
   caloryGoal: number,
@@ -298,9 +280,9 @@ function ActivityCalendar({ entries, caloryGoal, onDateSelect, selectedDate }: {
   const getDayColor = (date: Date) => {
     const dateStr = date.toISOString().split('T')[0];
     const entry = entries.find(e => e.date === dateStr);
-    
+ 
     const isSelected = dateStr === selectedDate;
-    
+ 
     if (isSelected) {
       return 'bg-blue-300 font-bold';
     } else if (entry) {
@@ -308,7 +290,7 @@ function ActivityCalendar({ entries, caloryGoal, onDateSelect, selectedDate }: {
     }
     return '';
   };
-
+ 
   return (
     <div className="flex justify-center">
       <Calendar 
@@ -324,27 +306,28 @@ function ActivityCalendar({ entries, caloryGoal, onDateSelect, selectedDate }: {
           customColor: (date) => getDayColor(date) !== '',
         }}
         modifiersClassNames={{
-          customColor: (date: Date) => getDayColor(date) as string,
+          customColor: (date: Date) => getDayColor(date as string),
         }}
         className="border rounded-md p-4"
       />
     </div>
   );
 }
-
-function ProgressBar({ current, goal, label, color = "bg-blue-500" }: { 
+ 
+function ProgressBar({ current, goal, label, color = "bg-blue-500", unit = "g" }: { 
   current: number; 
   goal: number; 
   label: string;
   color?: string;
+  unit?: string;
 }) {
   const percentage = Math.min((current / goal) * 100, 100);
-  
+ 
   return (
     <div className="space-y-2">
       <div className="flex justify-between text-sm">
         <span>{label}</span>
-        <span>{Math.round(current * 10) / 10}g / {goal}g</span>
+        <span>{Math.round(current * 10) / 10} {unit} / {goal} {unit}</span>
       </div>
       <div className="h-2 w-full bg-gray-200 rounded-full overflow-hidden">
         <div 
@@ -358,44 +341,119 @@ function ProgressBar({ current, goal, label, color = "bg-blue-500" }: {
     </div>
   );
 }
-
+ 
 function DiaryView() {
+  const navigate = useNavigate();
   const [entries, setEntries] = useState<DailyEntry[]>([]);
   const [selectedDate, setSelectedDate] = useState<string>(new Date().toISOString().split('T')[0]);
-  const [caloryGoal, setCaloryGoal] = useState<number>(2000);
+  const [caloryGoal, setCaloryGoal] = useState<number>(0);
   const [macroGoals, setMacroGoals] = useState<MacroGoals>({
-    protein: 150,
-    carbs: 200,
-    fat: 70
+    protein: 0,
+    carbs: 0,
+    fat: 0
   });
-
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [hasRequirements, setHasRequirements] = useState(false);
+ 
+  // Zaktualizowana funkcja fetchUserRequirements
+  const fetchUserRequirements = async () => {
+    try {
+      const userId = localStorage.getItem('userId');
+      const token = localStorage.getItem('token');
+ 
+      if (!userId || !token) {
+        console.error('Brak userId lub tokenu');
+        setIsSettingsOpen(true);
+        return;
+      }
+ 
+      const response = await axios.get<DailyRequirements>(
+        `http://localhost:8081/api/users/${userId}/daily-requirements`,
+        {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        }
+      );
+ 
+      if (response.data) {
+        console.log('Pobrane cele:', response.data);
+        setCaloryGoal(response.data.calories);
+        setMacroGoals({
+          protein: response.data.protein,
+          carbs: response.data.carbs,
+          fat: response.data.fat
+        });
+        setHasRequirements(true);
+      }
+    } catch (error) {
+      console.error('Błąd podczas pobierania celów:', error);
+      setIsSettingsOpen(true);
+      setHasRequirements(false);
+    }
+  };
+ 
+  // Dodaj nowy useEffect do wywoływania fetchUserRequirements
+  useEffect(() => {
+    fetchUserRequirements();
+  }, []); // Wywołaj tylko raz przy montowaniu komponentu
+ 
   useEffect(() => {
     const storedEntries = localStorage.getItem('diaryEntries');
     const storedGoal = localStorage.getItem('caloryGoal');
     const storedMacroGoals = localStorage.getItem('macroGoals');
+ 
     if (storedEntries) {
-      setEntries(JSON.parse(storedEntries));
+      try {
+        const parsedEntries = JSON.parse(storedEntries);
+        setEntries(parsedEntries);
+      } catch (e) {
+        console.error('Błąd podczas parsowania entries:', e);
+        setEntries([]);
+      }
     }
+ 
     if (storedGoal) {
-      setCaloryGoal(Number(storedGoal));
+      try {
+        const parsedGoal = Number(storedGoal);
+        if (!isNaN(parsedGoal)) {
+          setCaloryGoal(parsedGoal);
+        }
+      } catch (e) {
+        console.error('Błąd podczas parsowania caloryGoal:', e);
+      }
     }
+ 
     if (storedMacroGoals) {
-      setMacroGoals(JSON.parse(storedMacroGoals));
+      try {
+        const parsedMacroGoals = JSON.parse(storedMacroGoals);
+        if (parsedMacroGoals && typeof parsedMacroGoals === 'object') {
+          setMacroGoals(parsedMacroGoals);
+        }
+      } catch (e) {
+        console.error('Błąd podczas parsowania macroGoals:', e);
+      }
     }
   }, []);
-
+ 
   useEffect(() => {
-    localStorage.setItem('diaryEntries', JSON.stringify(entries));
+    if (entries && entries.length >= 0) {
+      localStorage.setItem('diaryEntries', JSON.stringify(entries));
+    }
   }, [entries]);
-
+ 
   useEffect(() => {
-    localStorage.setItem('caloryGoal', caloryGoal.toString());
+    if (caloryGoal !== undefined && caloryGoal !== null) {
+      localStorage.setItem('caloryGoal', caloryGoal.toString());
+    }
   }, [caloryGoal]);
-
+ 
   useEffect(() => {
-    localStorage.setItem('macroGoals', JSON.stringify(macroGoals));
+    if (macroGoals) {
+      localStorage.setItem('macroGoals', JSON.stringify(macroGoals));
+    }
   }, [macroGoals]);
-
+ 
   const getCurrentEntry = () => {
     return entries.find(entry => entry.date === selectedDate) || {
       date: selectedDate,
@@ -403,23 +461,86 @@ function DiaryView() {
       totalCalories: 0
     };
   };
-
-  const addMeal = (mealType: keyof DailyMeals, meal: Meal) => {
-    setEntries(prevEntries => {
-      const currentEntry = getCurrentEntry();
-      const updatedEntry = {
-        ...currentEntry,
-        meals: {
-          ...currentEntry.meals,
-          [mealType]: [...currentEntry.meals[mealType], meal]
-        },
-        totalCalories: currentEntry.totalCalories + meal.calories
-      };
-      const newEntries = prevEntries.filter(entry => entry.date !== selectedDate);
-      return [...newEntries, updatedEntry];
-    });
+ 
+  const addMeal = async (mealType: keyof DailyMeals, meal: Meal) => {
+    const userId = localStorage.getItem('userId');
+    const token = localStorage.getItem('token');
+ 
+    if (!userId || !token) {
+      console.error('Brak userId lub tokenu');
+      return;
+    }
+ 
+    // Pobierz aktualny wpis dla danego dnia
+    const currentEntry = getCurrentEntry();
+ 
+    // Przygotuj nową listę posiłków dla danego typu
+    const updatedMealsList = [...currentEntry.meals[mealType], meal];
+ 
+    // Przygotuj dane do wysłania
+    const mealData = {
+      mealType: mealType.toUpperCase(),
+      foodList: updatedMealsList.map(meal => ({
+        name: meal.name,
+        calories: meal.calories,
+        protein: meal.protein,
+        fat: meal.fat,
+        carbs: meal.carbs,
+        weight: meal.weight
+      }))
+    };
+ 
+    try {
+      const response = await fetch(
+        `http://localhost:8081/api/diary/${userId}/${selectedDate}`,
+        {
+          method: 'PUT',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(mealData)
+        }
+      );
+ 
+      if (!response.ok) {
+        throw new Error('Błąd podczas aktualizacji posiłku');
+      }
+ 
+      // Aktualizuj stan lokalny
+      setEntries(prevEntries => {
+        const updatedEntry = {
+          ...currentEntry,
+          meals: {
+            ...currentEntry.meals,
+            [mealType]: updatedMealsList
+          },
+          totalCalories: calculateTotalCalories(currentEntry.meals, mealType, updatedMealsList)
+        };
+        const newEntries = prevEntries.filter(entry => entry.date !== selectedDate);
+        return [...newEntries, updatedEntry];
+      });
+ 
+    } catch (error) {
+      console.error('Błąd podczas zapisywania posiłku:', error);
+      // Tutaj możesz dodać wyświetlanie komunikatu o błędzie dla użytkownika
+    }
   };
-
+ 
+  // Pomocnicza funkcja do obliczania całkowitej liczby kalorii
+  const calculateTotalCalories = (
+    currentMeals: DailyMeals, 
+    updatedMealType: keyof DailyMeals, 
+    updatedMealsList: Meal[]
+  ) => {
+    const meals = {
+      ...currentMeals,
+      [updatedMealType]: updatedMealsList
+    };
+ 
+    return Object.values(meals).flat().reduce((sum, meal) => sum + meal.calories, 0);
+  };
+ 
   const calculateDailyTotals = () => {
     const currentEntry = getCurrentEntry();
     const allMeals = [
@@ -427,7 +548,7 @@ function DiaryView() {
       ...currentEntry.meals.lunch,
       ...currentEntry.meals.dinner
     ];
-
+ 
     return allMeals.reduce((acc, meal) => ({
       protein: acc.protein + meal.protein,
       fat: acc.fat + meal.fat,
@@ -435,33 +556,237 @@ function DiaryView() {
       calories: acc.calories + meal.calories
     }), { protein: 0, fat: 0, carbs: 0, calories: 0 });
   };
-
+ 
   const currentEntry = getCurrentEntry();
   const dailyTotals = calculateDailyTotals();
-
+ 
   const handleDateSelect = (date: Date) => {
     const formattedDate = date.toISOString().split('T')[0];
     setSelectedDate(formattedDate);
+    fetchDailyMeals(formattedDate);
   };
-
+ 
+  useEffect(() => {
+    console.log('Current goals:', { caloryGoal, macroGoals }); // debugging
+  }, [caloryGoal, macroGoals]);
+ 
+  // Dodaj nową funkcję do pobierania dziennika
+  const fetchDailyMeals = async (date: string) => {
+    const userId = localStorage.getItem('userId');
+    const token = localStorage.getItem('token');
+ 
+    if (!userId || !token) {
+      console.error('Brak userId lub tokenu');
+      return;
+    }
+ 
+    try {
+      const response = await fetch(
+        `http://localhost:8081/api/diary/${userId}/${date}`,
+        {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        }
+      );
+ 
+      if (!response.ok) {
+        throw new Error('Błąd podczas pobierania posiłków');
+      }
+ 
+      const data = await response.json();
+ 
+      // Przygotuj nowy wpis do dziennika
+      const newEntry: DailyEntry = {
+        date: date,
+        meals: {
+          breakfast: data.breakfast?.foodList || [],
+          lunch: data.lunch?.foodList || [],
+          dinner: data.dinner?.foodList || []
+        },
+        totalCalories: calculateTotalCaloriesFromMeals({
+          breakfast: data.breakfast?.foodList || [],
+          lunch: data.lunch?.foodList || [],
+          dinner: data.dinner?.foodList || []
+        })
+      };
+ 
+      // Aktualizuj stan entries
+      setEntries(prevEntries => {
+        const newEntries = prevEntries.filter(entry => entry.date !== date);
+        return [...newEntries, newEntry];
+      });
+ 
+    } catch (error) {
+      console.error('Błąd podczas pobierania posiłków:', error);
+    }
+  };
+ 
+  // Pomocnicza funkcja do obliczania kalorii
+  const calculateTotalCaloriesFromMeals = (meals: DailyMeals) => {
+    return Object.values(meals)
+      .flat()
+      .reduce((sum, meal) => sum + (meal?.calories || 0), 0);
+  };
+ 
+  // Dodaj useEffect do pobierania posiłków przy pierwszym renderowaniu
+  useEffect(() => {
+    const today = new Date().toISOString().split('T')[0];
+    fetchDailyMeals(today);
+  }, []); // Tylko przy pierwszym renderowaniu
+ 
+  // Komponent karty z celami
+  const GoalsCard = () => (
+    <Card className="mb-4">
+      <CardHeader>
+        <CardTitle>Twoje cele</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div className="p-4 bg-gray-50 rounded-lg text-center">
+            <p className="text-sm text-gray-600">Kalorie</p>
+            <p className="text-xl font-bold">{caloryGoal} kcal</p>
+          </div>
+          <div className="p-4 bg-gray-50 rounded-lg text-center">
+            <p className="text-sm text-gray-600">Białko</p>
+            <p className="text-xl font-bold">{macroGoals.protein} g</p>
+          </div>
+          <div className="p-4 bg-gray-50 rounded-lg text-center">
+            <p className="text-sm text-gray-600">Węglowodany</p>
+            <p className="text-xl font-bold">{macroGoals.carbs} g</p>
+          </div>
+          <div className="p-4 bg-gray-50 rounded-lg text-center">
+            <p className="text-sm text-gray-600">Tłuszcze</p>
+            <p className="text-xl font-bold">{macroGoals.fat} g</p>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
+ 
+  // Dodaj nowe funkcje do obsługi edycji i usuwania
+  const deleteMeal = async (mealType: keyof DailyMeals, mealIndex: number) => {
+    const userId = localStorage.getItem('userId');
+    const token = localStorage.getItem('token');
+ 
+    if (!userId || !token) {
+      console.error('Brak userId lub tokenu');
+      return;
+    }
+ 
+    const currentEntry = getCurrentEntry();
+    const updatedMealsList = currentEntry.meals[mealType].filter((_, index) => index !== mealIndex);
+ 
+    const mealData = {
+      mealType: mealType.toUpperCase(),
+      foodList: updatedMealsList
+    };
+ 
+    try {
+      const response = await fetch(
+        `http://localhost:8081/api/diary/${userId}/${selectedDate}`,
+        {
+          method: 'PUT',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(mealData)
+        }
+      );
+ 
+      if (!response.ok) {
+        throw new Error('Błąd podczas usuwania posiłku');
+      }
+ 
+      setEntries(prevEntries => {
+        const updatedEntry = {
+          ...currentEntry,
+          meals: {
+            ...currentEntry.meals,
+            [mealType]: updatedMealsList
+          },
+          totalCalories: calculateTotalCalories(currentEntry.meals, mealType, updatedMealsList)
+        };
+        const newEntries = prevEntries.filter(entry => entry.date !== selectedDate);
+        return [...newEntries, updatedEntry];
+      });
+ 
+    } catch (error) {
+      console.error('Błąd podczas usuwania posiłku:', error);
+    }
+  };
+ 
+  const handleLogout = () => {
+    // Wyczyść dane z localStorage
+    localStorage.removeItem('token');
+    localStorage.removeItem('userId');
+    localStorage.removeItem('diaryEntries');
+    localStorage.removeItem('caloryGoal');
+    localStorage.removeItem('macroGoals');
+ 
+    // Przekieruj do strony głównej
+    navigate('/');
+  };
+ 
   return (
     <div className="container mx-auto p-4">
-      <h1 className="text-3xl font-bold mb-4">Dziennik Jedzenia</h1>
-      <Card className="mb-4">
-        <CardHeader>
-          <CardTitle>Ustawienia celów</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div>
-            <h3 className="font-medium mb-2">Cel kaloryczny</h3>
-            <CaloryGoalSetter goal={caloryGoal} setGoal={setCaloryGoal} />
-          </div>
-          <div>
-            <h3 className="font-medium mb-2">Cele makroskładników</h3>
-            <MacroGoalSetter goals={macroGoals} setGoals={setMacroGoals} />
-          </div>
-        </CardContent>
-      </Card>
+      <div className="flex justify-between items-center mb-4">
+        <h1 className="text-3xl font-bold">Dziennik Jedzenia</h1>
+        <div className="flex gap-2">
+          <Dialog open={isSettingsOpen} onOpenChange={setIsSettingsOpen}>
+            <DialogTrigger asChild>
+              <Button variant="outline">
+                {hasRequirements ? 'Zmień cele' : 'Ustaw cele'}
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="max-w-2xl">
+              <DialogHeader>
+                <DialogTitle>
+                  {hasRequirements ? 'Zmień swoje cele' : 'Ustaw swoje cele'}
+                </DialogTitle>
+                {!hasRequirements && (
+                  <DialogDescription>
+                    Nie masz jeszcze ustawionych celów. Wypełnij formularz, aby obliczyć swoje zapotrzebowanie.
+                  </DialogDescription>
+                )}
+              </DialogHeader>
+              <Settings 
+                userId={Number(localStorage.getItem('userId'))} 
+                onSettingsUpdate={(requirements) => {
+                  setCaloryGoal(requirements.calories);
+                  setMacroGoals({
+                    protein: requirements.protein,
+                    carbs: requirements.carbs,
+                    fat: requirements.fat
+                  });
+                  setHasRequirements(true);
+                  setIsSettingsOpen(false);
+                }} 
+              />
+            </DialogContent>
+          </Dialog>
+          <Button 
+            variant="destructive" 
+            onClick={handleLogout}
+          >
+            Wyloguj
+          </Button>
+        </div>
+      </div>
+ 
+      {hasRequirements ? (
+        <GoalsCard />
+      ) : (
+        <Alert className="mb-4">
+          <AlertTitle>Brak ustawionych celów</AlertTitle>
+          <AlertDescription>
+            Kliknij przycisk "Ustaw cele" aby obliczyć swoje zapotrzebowanie kaloryczne i makroskładniki.
+          </AlertDescription>
+        </Alert>
+      )}
+ 
       <Card className="mb-4">
         <CardHeader>
           <CardTitle>Kalendarz aktywności</CardTitle>
@@ -478,9 +803,27 @@ function DiaryView() {
           </div>
         </CardContent>
       </Card>
-      <MealSection title="Śniadanie" meals={currentEntry.meals.breakfast} addMeal={(meal) => addMeal('breakfast', meal)} />
-      <MealSection title="Obiad" meals={currentEntry.meals.lunch} addMeal={(meal) => addMeal('lunch', meal)} />
-      <MealSection title="Kolacja" meals={currentEntry.meals.dinner} addMeal={(meal) => addMeal('dinner', meal)} />
+      <MealSection 
+        title="Śniadanie" 
+        meals={currentEntry.meals.breakfast} 
+        addMeal={(meal) => addMeal('breakfast', meal)} 
+        mealType="breakfast"
+        onDelete={deleteMeal}
+      />
+      <MealSection 
+        title="Obiad" 
+        meals={currentEntry.meals.lunch} 
+        addMeal={(meal) => addMeal('lunch', meal)} 
+        mealType="lunch"
+        onDelete={deleteMeal}
+      />
+      <MealSection 
+        title="Kolacja" 
+        meals={currentEntry.meals.dinner} 
+        addMeal={(meal) => addMeal('dinner', meal)} 
+        mealType="dinner"
+        onDelete={deleteMeal}
+      />
       <Card>
         <CardHeader>
           <CardTitle>Podsumowanie dnia</CardTitle>
@@ -493,8 +836,9 @@ function DiaryView() {
               goal={caloryGoal}
               label="Kalorie (kcal)"
               color="bg-purple-500"
+              unit = "kcal"
             />
-
+ 
             {/* Białko */}
             <ProgressBar
               current={dailyTotals.protein}
@@ -502,7 +846,7 @@ function DiaryView() {
               label="Białko"
               color="bg-red-500"
             />
-
+ 
             {/* Węglowodany */}
             <ProgressBar
               current={dailyTotals.carbs}
@@ -510,7 +854,7 @@ function DiaryView() {
               label="Węglowodany"
               color="bg-green-500"
             />
-
+ 
             {/* Tłuszcze */}
             <ProgressBar
               current={dailyTotals.fat}
@@ -518,12 +862,12 @@ function DiaryView() {
               label="Tłuszcze"
               color="bg-yellow-500"
             />
-
+ 
           </div>
         </CardContent>
       </Card>
     </div>
   );
 }
-
+ 
 export default DiaryView;

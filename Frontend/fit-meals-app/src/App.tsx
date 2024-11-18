@@ -2,7 +2,6 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import { LoginForm } from './components/LoginForm';
 import { RegisterForm } from './components/RegisterForm';
 import DiaryView  from './components/DiaryView'; // Twój główny komponent z dziennikiem
-import Settings from './components/Settings';
 
 function App() {
   return (
@@ -17,14 +16,6 @@ function App() {
               <DiaryView />
             </ProtectedRoute>
           } 
-        />
-         <Route
-          path="/settings"
-          element={
-            <ProtectedRoute>
-              <Settings userId={0} />
-            </ProtectedRoute>
-          }
         />
         <Route path="/" element={<Navigate to="/login" replace />} />
       </Routes>
