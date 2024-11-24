@@ -2,12 +2,10 @@ package com.example.FitMeals.services;
 
 import com.example.FitMeals.models.Food;
 import com.example.FitMeals.models.Meal;
-import com.example.FitMeals.models.MealItem;
 import com.example.FitMeals.models.types.MealType;
 import com.example.FitMeals.repositories.MealRepository;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 

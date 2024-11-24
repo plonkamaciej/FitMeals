@@ -3,7 +3,7 @@ import axios from 'axios';
 import { Input } from './ui/input';
 import { Button } from './ui/button';
 
-// Interfejs dla danych uĹĽytkownika
+// Interfejs dla danych użytkownika
 interface UserData {
     age: number;
     weight: number;
@@ -13,7 +13,7 @@ interface UserData {
     goal: Goal;
 }
 
-// Interfejs dla wynikĂłw zapotrzebowania
+// Interfejs dla wyników zapotrzebowania
 interface DailyRequirements {
     calories: number;
     protein: number;
@@ -21,7 +21,7 @@ interface DailyRequirements {
     fat: number;
 }
 
-// Typowanie propsĂłw komponentu
+// Typowanie propsów komponentu
 interface SettingsProps {
     userId: number;
     onSettingsUpdate: (requirements: DailyRequirements) => void;
@@ -43,7 +43,7 @@ enum ActivityLevel {
 }
 
 const Settings: React.FC<SettingsProps> = ({ userId, onSettingsUpdate }) => {
-    // Stan do przechowywania danych uĹĽytkownika
+    // Stan do przechowywania danych użytkownika
     const [userData, setUserData] = useState<UserData>({
         age: 0,
         weight: 0,
@@ -53,10 +53,10 @@ const Settings: React.FC<SettingsProps> = ({ userId, onSettingsUpdate }) => {
         goal: Goal.MAINTAIN_WEIGHT,
     });
 
-    // Stan na zapotrzebowanie kaloryczne i makroskĹ‚adniki
+    // Stan na zapotrzebowanie kaloryczne i makroskładniki
     const [dailyRequirements, setDailyRequirements] = useState<DailyRequirements | null>(null);
 
-    // ObsĹ‚uga zmiany danych w formularzu
+    // Obsługa zmiany danych w formularzu
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
         const { name, value } = e.target;
         setUserData({
@@ -65,12 +65,12 @@ const Settings: React.FC<SettingsProps> = ({ userId, onSettingsUpdate }) => {
         } as UserData);
     };
 
-    // Funkcja obsĹ‚ugujÄ…ca przesĹ‚anie danych i wyliczenie zapotrzebowania
+    // Funkcja obsługująca przesłanie danych i wyliczenie zapotrzebowania
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         
         try {
-            console.log('WysyĹ‚am dane:', userData); // debugging
+            console.log('Wysyłam dane:', userData); // debugging
             
             const response = await axios.post<DailyRequirements>(
                 `http://localhost:8081/api/users/${userId}/calculate-daily-requirement`,
@@ -82,7 +82,7 @@ const Settings: React.FC<SettingsProps> = ({ userId, onSettingsUpdate }) => {
                 }
             );
 
-            console.log('OdpowiedĹş z API:', response.data);
+            console.log('Odpowiedź z API:', response.data);
 
             if (response.data) {
                 const requirements: DailyRequirements = {
@@ -96,13 +96,13 @@ const Settings: React.FC<SettingsProps> = ({ userId, onSettingsUpdate }) => {
             }
         } catch (error) {
             if (axios.isAxiosError(error)) {
-                console.error("BĹ‚Ä…d podczas obliczania zapotrzebowania:", {
+                console.error("Błąd podczas obliczania zapotrzebowania:", {
                     status: error.response?.status,
                     data: error.response?.data,
                     headers: error.response?.headers
                 });
             } else {
-                console.error("Nieznany bĹ‚Ä…d:", error);
+                console.error("Nieznany błąd:", error);
             }
         }
     };
@@ -118,7 +118,7 @@ const Settings: React.FC<SettingsProps> = ({ userId, onSettingsUpdate }) => {
             setDailyRequirements(response.data);
             });
         } catch (error) {
-            console.error("BĹ‚Ä…d podczas pobierania zapotrzebowania:", error);
+            console.error("Błąd podczas pobierania zapotrzebowania:", error);
         }
     }, []);
 
@@ -166,29 +166,29 @@ const Settings: React.FC<SettingsProps> = ({ userId, onSettingsUpdate }) => {
                         />
                     </div>
                     <div className="space-y-2">
-                        <label className="text-sm font-medium text-gray-700">PĹ‚eÄ‡:</label>
+                        <label className="text-sm font-medium text-gray-700">Płeć:</label>
                         <select 
                             name="gender" 
                             value={userData.gender} 
                             onChange={handleChange} 
                             className="w-full rounded-md border border-gray-300 p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
                         >
-                            <option value="male">MÄ™ĹĽczyzna</option>
+                            <option value="male">Mężczyzna</option>
                             <option value="female">Kobieta</option>
                         </select>
                     </div>
                     <div className="space-y-2">
-                        <label className="text-sm font-medium text-gray-700">Poziom aktywnoĹ›ci:</label>
+                        <label className="text-sm font-medium text-gray-700">Poziom aktywności:</label>
                         <select 
                             name="activityLevel" 
                             value={userData.activityLevel} 
                             onChange={handleChange} 
                             className="w-full rounded-md border border-gray-300 p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
                         >
-                            <option value={ActivityLevel.SEDENTARY}>SiedzÄ…cy (brak aktywnoĹ›ci)</option>
-                            <option value={ActivityLevel.LIGHTLY_ACTIVE}>Lekko aktywny (1-3 treningi/tydzieĹ„)</option>
-                            <option value={ActivityLevel.MODERATELY_ACTIVE}>Umiarkowanie aktywny (3-5 treningĂłw/tydzieĹ„)</option>
-                            <option value={ActivityLevel.VERY_ACTIVE}>Bardzo aktywny (6-7 treningĂłw/tydzieĹ„)</option>
+                            <option value={ActivityLevel.SEDENTARY}>Siedzący (brak aktywności)</option>
+                            <option value={ActivityLevel.LIGHTLY_ACTIVE}>Lekko aktywny (1-3 treningi/tydzień)</option>
+                            <option value={ActivityLevel.MODERATELY_ACTIVE}>Umiarkowanie aktywny (3-5 treningów/tydzień)</option>
+                            <option value={ActivityLevel.VERY_ACTIVE}>Bardzo aktywny (6-7 treningów/tydzień)</option>
                             <option value={ActivityLevel.EXTRA_ACTIVE}>Super aktywny (2x dziennie treningi)</option>
                         </select>
                     </div>
@@ -200,9 +200,9 @@ const Settings: React.FC<SettingsProps> = ({ userId, onSettingsUpdate }) => {
                             onChange={handleChange} 
                             className="w-full rounded-md border border-gray-300 p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
                         >
-                            <option value={Goal.LOSE_WEIGHT}>Redukcja masy ciaĹ‚a</option>
-                            <option value={Goal.MAINTAIN_WEIGHT}>Utrzymanie masy ciaĹ‚a</option>
-                            <option value={Goal.GAIN_WEIGHT}>ZwiÄ™kszenie masy ciaĹ‚a</option>
+                            <option value={Goal.LOSE_WEIGHT}>Redukcja masy ciała</option>
+                            <option value={Goal.MAINTAIN_WEIGHT}>Utrzymanie masy ciała</option>
+                            <option value={Goal.GAIN_WEIGHT}>Zwiększenie masy ciała</option>
                         </select>
                     </div>
                 </div>
@@ -221,15 +221,15 @@ const Settings: React.FC<SettingsProps> = ({ userId, onSettingsUpdate }) => {
                             <p className="text-xl font-bold">{dailyRequirements.calories} kcal</p>
                         </div>
                         <div className="p-4 bg-gray-50 rounded-lg text-center">
-                            <p className="text-sm text-gray-600">BiaĹ‚ko</p>
+                            <p className="text-sm text-gray-600">Białko</p>
                             <p className="text-xl font-bold">{dailyRequirements.protein} g</p>
                         </div>
                         <div className="p-4 bg-gray-50 rounded-lg text-center">
-                            <p className="text-sm text-gray-600">WÄ™glowodany</p>
+                            <p className="text-sm text-gray-600">Węglowodany</p>
                             <p className="text-xl font-bold">{dailyRequirements.carbs} g</p>
                         </div>
                         <div className="p-4 bg-gray-50 rounded-lg text-center">
-                            <p className="text-sm text-gray-600">TĹ‚uszcze</p>
+                            <p className="text-sm text-gray-600">Tłuszcze</p>
                             <p className="text-xl font-bold">{dailyRequirements.fat} g</p>
                         </div>
                     </div>
