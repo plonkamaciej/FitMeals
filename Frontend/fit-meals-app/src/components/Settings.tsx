@@ -173,8 +173,8 @@ const Settings: React.FC<SettingsProps> = ({ userId, onSettingsUpdate }) => {
                             onChange={handleChange} 
                             className="w-full rounded-md border border-gray-300 p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
                         >
-                            <option value="male">Mężczyzna</option>
-                            <option value="female">Kobieta</option>
+                            <option value="MALE">Mężczyzna</option>
+                            <option value="FEMALE">Kobieta</option>
                         </select>
                     </div>
                     <div className="space-y-2">
