@@ -76,4 +76,9 @@ public class DiaryService {
     }
 
 
+    public List<Diary>getDiaryByUserAndDateBetween(AppUser user, LocalDate startDate, LocalDate endDate){
+        return diaryRepository.findByUserAndDateBetween(user,startDate,endDate);
+    }
+
+
 }

@@ -38,4 +38,5 @@ public class Meal {
         this.foodList.add(food);
     }
 
+
 }

@@ -1,5 +1,6 @@
 package com.example.FitMeals.repositories;
 
+import com.example.FitMeals.models.AppUser;
 import com.example.FitMeals.models.Diary;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
@@ -17,4 +18,7 @@ public interface DiaryRepository extends JpaRepository<Diary,Long> {
    Diary findDiaryByDate(LocalDate date);
 
    List<Diary> findAllByUserId(Long userId);
+
+   List<Diary> findByUserAndDateBetween(AppUser user, LocalDate startDate, LocalDate endDate);
+
 }

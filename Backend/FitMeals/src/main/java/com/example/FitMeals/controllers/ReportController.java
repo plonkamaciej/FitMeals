@@ -1,11 +1,17 @@
 package com.example.FitMeals.controllers;
 
 
+import com.example.FitMeals.dto.ReportRequest;
+import com.example.FitMeals.models.AppUser;
 import com.example.FitMeals.models.Report;
+import com.example.FitMeals.models.types.ReportType;
 import com.example.FitMeals.services.ReportService;
+import com.example.FitMeals.services.UserService;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @RestController
@@ -14,25 +20,13 @@ import java.util.List;
 public class ReportController {
 
     private final ReportService reportService;
+    private final UserService userService;
 
-    public ReportController(ReportService reportService) {
+    public ReportController(ReportService reportService, UserService userService) {
         this.reportService = reportService;
+        this.userService = userService;
     }
 
-    @GetMapping
-    public List<Report> getAllReports() {
-        return reportService.getAllReports();
-    }
-
-    @GetMapping("/{id}")
-    public Report getReportById(@PathVariable Long id) {
-        return reportService.getReportById(id).orElse(null);
-    }
-
-    @PostMapping
-    public Report createReport(@RequestBody Report report) {
-        return reportService.saveReport(report);
-    }
 
     @PutMapping("/{id}")
     public ResponseEntity<Report> updateReport(@PathVariable Long id, @RequestBody Report report) {
@@ -48,4 +42,25 @@ public class ReportController {
     public void deleteReport(@PathVariable Long id) {
         reportService.deleteReport(id);
     }
+
+    @PostMapping("/generate")
+    public ResponseEntity<Report> generateReport(@RequestBody ReportRequest reportRequest
+    ) {
+
+        AppUser user = userService.getUserById(reportRequest.getUserId()).orElseThrow(() -> new RuntimeException("User not found"));
+
+        Report report = reportService.generateReport(user, reportRequest.getReportType(), reportRequest.getStartDate(), reportRequest.getEndDate());
+        return ResponseEntity.ok(report);
+    }
+
+    @GetMapping
+    public ResponseEntity<List<Report>> getReports(@RequestBody ReportRequest reportRequest) {
+        // Pobierz użytkownika
+        AppUser user = userService.getUserById(reportRequest.getUserId()).orElseThrow(() -> new RuntimeException("User not found"));
+
+        List<Report> reports = reportService.getReports(user, reportRequest.getReportType(), reportRequest.getStartDate(), reportRequest.getEndDate());
+        return ResponseEntity.ok(reports);
+    }
+
+
 }

@@ -50,4 +50,6 @@ public class Diary {
         this.dinner = dinner;
         this.snack = snack;
     }
+
+
 }
