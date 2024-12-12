@@ -88,7 +88,7 @@ public class ReportService {
         report.setCreatedAt(LocalDateTime.now());
 
         // Zapisz raport
-        return reportRepository.save(report);
+        return report;
     }
 
     public List<Report> getReports(AppUser user, ReportType reportType, LocalDateTime startDate, LocalDateTime endDate) {

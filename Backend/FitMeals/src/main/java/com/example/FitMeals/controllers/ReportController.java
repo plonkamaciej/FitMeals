@@ -50,10 +50,22 @@ public class ReportController {
         AppUser user = userService.getUserById(reportRequest.getUserId()).orElseThrow(() -> new RuntimeException("User not found"));
 
         Report report = reportService.generateReport(user, reportRequest.getReportType(), reportRequest.getStartDate(), reportRequest.getEndDate());
+        reportService.saveReport(report);
         return ResponseEntity.ok(report);
     }
 
-    @GetMapping
+    @GetMapping()
+    public ResponseEntity<Report> getReport(@RequestBody ReportRequest reportRequest
+    ) {
+
+        AppUser user = userService.getUserById(reportRequest.getUserId()).orElseThrow(() -> new RuntimeException("User not found"));
+
+        Report report = reportService.generateReport(user, reportRequest.getReportType(), reportRequest.getStartDate(), reportRequest.getEndDate());
+
+        return ResponseEntity.ok(report);
+    }
+
+    @GetMapping("/all")
     public ResponseEntity<List<Report>> getReports(@RequestBody ReportRequest reportRequest) {
         // Pobierz użytkownika
         AppUser user = userService.getUserById(reportRequest.getUserId()).orElseThrow(() -> new RuntimeException("User not found"));
