@@ -2,6 +2,8 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import { LoginForm } from './components/LoginForm';
 import { RegisterForm } from './components/RegisterForm';
 import DiaryView  from './components/DiaryView'; // Twój główny komponent z dziennikiem
+import ReportsView from './components/ReportsView';
+
 
 function App() {
   return (
@@ -17,6 +19,7 @@ function App() {
             </ProtectedRoute>
           } 
         />
+        <Route path="/reports" element={<ProtectedRoute><ReportsView /></ProtectedRoute>} />
         <Route path="/" element={<Navigate to="/login" replace />} />
       </Routes>
     </Router>

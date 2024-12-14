@@ -25,6 +25,7 @@ interface DailyMeals {
   breakfast: Meal[];
   lunch: Meal[];
   dinner: Meal[];
+  snack: Meal[];
 }
  
 interface DailyEntry {
@@ -457,7 +458,7 @@ function DiaryView() {
   const getCurrentEntry = () => {
     return entries.find(entry => entry.date === selectedDate) || {
       date: selectedDate,
-      meals: { breakfast: [], lunch: [], dinner: [] },
+      meals: { breakfast: [], lunch: [], dinner: [], snack: [] },
       totalCalories: 0
     };
   };
@@ -546,7 +547,8 @@ function DiaryView() {
     const allMeals = [
       ...currentEntry.meals.breakfast,
       ...currentEntry.meals.lunch,
-      ...currentEntry.meals.dinner
+      ...currentEntry.meals.dinner,
+      ...currentEntry.meals.snack
     ];
  
     return allMeals.reduce((acc, meal) => ({
@@ -603,12 +605,14 @@ function DiaryView() {
         meals: {
           breakfast: data.breakfast?.foodList || [],
           lunch: data.lunch?.foodList || [],
-          dinner: data.dinner?.foodList || []
+          dinner: data.dinner?.foodList || [],
+          snack: data.snack?.foodList || []
         },
         totalCalories: calculateTotalCaloriesFromMeals({
           breakfast: data.breakfast?.foodList || [],
           lunch: data.lunch?.foodList || [],
-          dinner: data.dinner?.foodList || []
+          dinner: data.dinner?.foodList || [],
+          snack: data.snack?.foodList || []
         })
       };
  
@@ -767,12 +771,16 @@ function DiaryView() {
               />
             </DialogContent>
           </Dialog>
+          <Button onClick={() => navigate('/reports')}>
+        Raporty
+      </Button>
           <Button 
             variant="destructive" 
             onClick={handleLogout}
           >
             Wyloguj
           </Button>
+
         </div>
       </div>
  
@@ -824,6 +832,13 @@ function DiaryView() {
         mealType="dinner"
         onDelete={deleteMeal}
       />
+            <MealSection 
+        title="Przekąska" 
+        meals={currentEntry.meals.snack} 
+        addMeal={(meal) => addMeal('snack', meal)} 
+        mealType="snack"
+        onDelete={deleteMeal}
+      />
       <Card>
         <CardHeader>
           <CardTitle>Podsumowanie dnia</CardTitle>
@@ -866,6 +881,7 @@ function DiaryView() {
           </div>
         </CardContent>
       </Card>
+
     </div>
   );
 }
